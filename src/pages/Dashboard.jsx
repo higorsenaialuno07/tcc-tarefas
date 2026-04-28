@@ -8,12 +8,13 @@ import Chart from '../components/Chart'
 
 function Dashboard() {
   const [tasks, setTasks] = useState([])
-  const [title, setTitle] = useState('')
-  const [priority, setPriority] = useState('Média')
-  const [date, setDate] = useState('')
+  const [taskTitle, setTaskTitle] = useState("") // Nome único para o input
+  const [priority, setPriority] = useState("Média")
+  const [dueDate, setDueDate] = useState("")
   const [filter, setFilter] = useState('all')
   const navigate = useNavigate()
 
+  // 1. Verifica se o usuário está logado
   useEffect(() => {
     async function getUser() {
       const { data } = await supabase.auth.getUser()
@@ -22,37 +23,53 @@ function Dashboard() {
     getUser()
   }, [navigate])
 
+  // 2. Carrega as tarefas do banco
   async function fetchTasks() {
-    const { data } = await supabase.from('tasks').select('*')
-    setTasks(data || [])
-  }
-
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+  
+  if (error) console.error("Erro ao carregar:", error.message)
+  else setTasks(data || [])
+}
   useEffect(() => {
     fetchTasks()
   }, [])
 
-  async function addTask() {
-    if (!title) return
+  // 3. Adiciona nova tarefa
+  async function handleAddTask(e) {
+    e.preventDefault();
+    if (!taskTitle) return alert("Digite um título!");
 
-    await supabase.from('tasks').insert([
-      {
-        title,
-        status: false,
-        priority,
-        due_date: date
-      }
-    ])
+    const { data: { user } } = await supabase.auth.getUser();
 
-    setTitle('')
-    setDate('')
-    fetchTasks()
+    const { error } = await supabase
+  .from('tasks')
+  .insert([
+    { 
+      title: taskTitle, 
+      user_id: user.id, // O ID que vem do auth.users
+      status: false,
+      priority: priority,
+      due_date: dueDate || null
+    }
+  ]);
+    if (error) {
+      alert("Erro ao adicionar: " + error.message);
+    } else {
+      setTaskTitle(""); 
+      setDueDate("");
+      fetchTasks(); // Recarrega a lista
+    }
   }
 
+  // 4. Deleta tarefa
   async function deleteTask(id) {
     await supabase.from('tasks').delete().eq('id', id)
     fetchTasks()
   }
 
+  // 5. Alterna entre concluída/pendente
   async function toggleTask(id, status) {
     await supabase.from('tasks')
       .update({ status: !status })
@@ -61,6 +78,7 @@ function Dashboard() {
     fetchTasks()
   }
 
+  // 6. Lógica de Filtro
   const filteredTasks = tasks.filter(task => {
     if (filter === 'done') return task.status
     if (filter === 'pending') return !task.status
@@ -69,35 +87,30 @@ function Dashboard() {
 
   return (
     <div className="app-container">
-
       <Sidebar />
 
       <div className="main-layout">
-
         <Header />
 
         <main className="dashboard-content">
-
           {/* RESUMO */}
           <div className="summary-container">
             <div className="summary-card">
-              Total: {tasks.length}
+              Total: <strong>{tasks.length}</strong>
             </div>
-
             <div className="summary-card">
-              Concluídas: {tasks.filter(t => t.status).length}
+              Concluídas: <strong>{tasks.filter(t => t.status).length}</strong>
             </div>
-
             <div className="summary-card">
-              Pendentes: {tasks.filter(t => !t.status).length}
+              Pendentes: <strong>{tasks.filter(t => !t.status).length}</strong>
             </div>
           </div>
 
           {/* FILTROS */}
           <div className="filters-bar">
-            <button onClick={() => setFilter('all')}>Todas</button>
-            <button onClick={() => setFilter('done')}>Concluídas</button>
-            <button onClick={() => setFilter('pending')}>Pendentes</button>
+            <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>Todas</button>
+            <button className={filter === 'done' ? 'active' : ''} onClick={() => setFilter('done')}>Concluídas</button>
+            <button className={filter === 'pending' ? 'active' : ''} onClick={() => setFilter('pending')}>Pendentes</button>
           </div>
 
           {/* GRÁFICO */}
@@ -105,68 +118,59 @@ function Dashboard() {
             <Chart tasks={tasks} />
           </div>
 
-          {/* FORM */}
-          <div className="task-form">
-
-            <input
-              type="text"
-              placeholder="Nova tarefa"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+          {/* FORMULÁRIO */}
+          <form className="task-form" onSubmit={handleAddTask}>
+            <input 
+              type="text" 
+              placeholder="Nova tarefa..." 
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
             />
-
+            
             <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-              <option>Média</option>
-              <option>Alta</option>
-              <option>Baixa</option>
+              <option value="Alta">Alta</option>
+              <option value="Média">Média</option>
+              <option value="Baixa">Baixa</option>
             </select>
 
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+            <input 
+              type="date" 
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
             />
 
-            <button onClick={addTask}>Adicionar</button>
-          </div>
+            <button type="submit">Adicionar</button>
+          </form>
 
-          {/* LISTA */}
+          {/* LISTA DE TAREFAS */}
           <div className="task-list">
-
+            {filteredTasks.length === 0 && <p style={{textAlign: 'center', color: '#667'}}>Nenhuma tarefa encontrada.</p>}
+            
             {filteredTasks.map(task => (
               <div className="task-item" key={task.id}>
-
                 <div className="task-main">
                   <input
                     type="checkbox"
                     checked={task.status}
                     onChange={() => toggleTask(task.id, task.status)}
                   />
-
                   <span className={task.status ? 'done' : ''}>
                     {task.title}
                   </span>
                 </div>
 
                 <div className="task-meta">
-
                   <span className={`badge ${task.priority.toLowerCase()}`}>
                     {task.priority}
                   </span>
-
-                  <small>{task.due_date}</small>
-
-                  <button onClick={() => deleteTask(task.id)}>
+                  <small>{task.due_date || 'Sem data'}</small>
+                  <button className="delete-btn" onClick={() => deleteTask(task.id)}>
                     🗑
                   </button>
-
                 </div>
-
               </div>
             ))}
-
           </div>
-
         </main>
       </div>
     </div>

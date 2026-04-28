@@ -21,13 +21,43 @@ body {
   padding: 20px;
 } */
 
+/* .logo {
+  color: #ffffff !important;   /* Garante que o texto seja branco */
+  /* margin: 0 0 40px 0 !important; /* Espaço generoso abaixo do título */
+  /* font-size: 1.6rem;           /* Tamanho de destaque */
+  /* font-weight: 800;            Peso extra para parecer uma marca */ */
+  /* text-align: center;          Centraliza o nome na sidebar */
+  /* text-transform: uppercase;   Estilo caixa alta */
+  /* letter-spacing: 2px;         Espaçamento entre letras elegante */
+  /* width: 100%;                 Garante que ocupe a largura da sidebar */
+/* }  */
+
+.logo h2 {
+  color: #ffffff !important;
+  margin: 0;
+}
+
+h2.logo, 
+.sidebar h2, 
 .logo {
-  margin-bottom: 30px;
+  color: #ffffff !important;   /* Branco absoluto */
+  margin: 0 0 40px 0 !important;
+  font-size: 1.6rem !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  display: block !important;
+}
+
+.logo h2 {
+  color: #ffffff !important;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
   gap: 15px;
 }
 
@@ -44,7 +74,122 @@ body {
 }
 
 .logout-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f3f4f6; /* Cinza clarinho de fundo */
+  font-family: 'Inter', sans-serif;
+}
+
+.login-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-card h2 {
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.input-group {
+  text-align: left;
+  margin-bottom: 1.2rem;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.4rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #3b82f6; /* Cor da borda principal */
+  /* O box-shadow abaixo faz o efeito de "ring" (brilho externo) */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); 
+}
+
+.btn-login {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+}
+
+.btn-login:hover {
+  background-color: #2563eb;
+}
+
+.btn-login:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ef4444;
+  background-color: #fee2e2;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.footer-text {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.link-span {
+  color: #3b82f6;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.link-span:hover {
+  text-decoration: underline;
 }
 
 /* HEADER */

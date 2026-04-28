@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../services/supabase'
 import { useNavigate } from 'react-router-dom'
+import '../App.css'
 
 function Login() {
   const [email, setEmail] = useState('')
@@ -9,7 +10,10 @@ function Login() {
   const [errorMsg, setErrorMsg] = useState('')
   const navigate = useNavigate()
 
-  async function handleLogin() {
+  async function handleLogin(e) {
+    // 1. Previne o comportamento padrão se for usado dentro de um <form>
+    if (e) e.preventDefault();
+    
     setErrorMsg('')
 
     if (!email || !password) {
@@ -19,6 +23,7 @@ function Login() {
 
     setLoading(true)
 
+    // 2. Tenta fazer o login
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -29,46 +34,66 @@ function Login() {
     if (!error) {
       navigate('/dashboard')
     } else {
-      setErrorMsg(error.message)
+      // Tradução amigável de erros comuns do Supabase
+      if (error.message === 'Invalid login credentials') {
+        setErrorMsg('Email ou senha incorretos.')
+      } else {
+        setErrorMsg(error.message)
+      }
     }
   }
 
   return (
-    <div className="container">
-      <h2>Login</h2>
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Bem-vindo de volta</h2>
+        <p className="subtitle">Faça login para gerenciar suas tarefas</p>
 
-      <input
-        type="email"
-        placeholder="Digite seu email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        {/* 3. Envolvendo em um form para permitir o "Enter" no teclado */}
+        <form onSubmit={handleLogin}>
+          <div className="input-group">
+            <label>E-mail</label>
+            <input
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-      <input
-        type="password"
-        placeholder="Digite sua senha"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+          <div className="input-group">
+            <label>Senha</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-      {errorMsg && (
-        <p style={{ color: 'red', marginTop: '10px' }}>
-          {errorMsg}
+          {errorMsg && (
+            <p className="error-message">
+              {errorMsg}
+            </p>
+          )}
+
+          <button type="submit" className="btn-login" disabled={loading}>
+            {loading ? 'Autenticando...' : 'Entrar'}
+          </button>
+        </form>
+
+        <p className="footer-text">
+          Não tem conta? 
+          <span 
+            className="link-span"
+            onClick={() => navigate('/register')}
+          >
+             Cadastre-se
+          </span>
         </p>
-      )}
-
-      <button onClick={handleLogin} disabled={loading}>
-        {loading ? 'Entrando...' : 'Entrar'}
-      </button>
-
-      <p style={{ marginTop: '15px', textAlign: 'center' }}>
-        Não tem conta? <span 
-          style={{ color: 'blue', cursor: 'pointer' }}
-          onClick={() => navigate('/register')}
-        >
-          Cadastre-se
-        </span>
-      </p>
+      </div>
     </div>
   )
 }

@@ -1,129 +1,138 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState({ type: "", text: "" });
 
   useEffect(() => {
     async function loadUser() {
       const { data } = await supabase.auth.getUser();
       setUser(data.user);
-      setName(data.user.user_metadata?.name || "");
+      setName(data.user?.user_metadata?.name || "");
     }
-
     loadUser();
   }, []);
 
-  async function handleUpdate() {
-    setLoading(true);
+  // Função para mostrar feedback temporário
+  const showMsg = (type, text) => {
+    setMsg({ type, text });
+    setTimeout(() => setMsg({ type: "", text: "" }), 3000);
+  };
 
-    const { error } = await supabase.auth.updateUser({
+  async function handleUpdateProfile() {
+    setLoading(true);
+    const { data, error } = await supabase.auth.updateUser({
       data: { name }
     });
-
     setLoading(false);
-
+    
     if (error) {
-      alert("Erro ao atualizar perfil");
+      showMsg("error", "Erro ao atualizar nome.");
     } else {
-      alert("Perfil atualizado com sucesso!");
+      showMsg("success", "Nome atualizado!");
+      setUser(data.user); // Adicione isso para atualizar o avatar na hora!
     }
   }
 
-  if (!user) return <p>Carregando perfil...</p>;
+  async function handleChangePassword() {
+    if (newPassword.length < 6) {
+      showMsg("error", "A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setLoading(false);
+    if (error) showMsg("error", "Erro ao mudar senha.");
+    else {
+      showMsg("success", "Senha alterada com sucesso!");
+      setNewPassword("");
+    }
+  }
+
+  if (!user) return <div className="loading">Carregando...</div>;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
+    <div className="app-container">
+      <Sidebar />
+      <div className="main-layout">
+        <Header />
         
-        <div style={styles.avatar}>
-          {name ? name.charAt(0).toUpperCase() : "U"}
-        </div>
+        <main className="dashboard-content">
+          <div className="profile-grid">
+            
+            {/* CARD 1: INFORMAÇÕES BÁSICAS */}
+            <div className="profile-card">
+              <div className="profile-avatar">
+                {name ? name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+              </div>
+              <h3>Dados Pessoais</h3>
+              <p className="profile-email">{user.email}</p>
+              
+              <div className="profile-field">
+                <label>Nome Completo</label>
+                <input 
+                  type="text" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  className="profile-input"
+                />
+              </div>
+              <button className="btn-save" onClick={handleUpdateProfile} disabled={loading}>
+                {loading ? "Salvando..." : "Atualizar Nome"}
+              </button>
+            </div>
 
-        <h2 style={styles.title}>Meu Perfil</h2>
+            {/* CARD 2: SEGURANÇA */}
+            <div className="profile-card">
+              <h3>Segurança</h3>
+              <p className="subtitle">Altere sua senha de acesso</p>
+              
+              <div className="profile-field">
+                <label>Nova Senha</label>
+                <input 
+                  type="password" 
+                  value={newPassword} 
+                  onChange={(e) => setNewPassword(e.target.value)} 
+                  placeholder="Mínimo 6 caracteres"
+                  className="profile-input"
+                />
+              </div>
+              <button className="btn-password" onClick={handleChangePassword} disabled={loading}>
+                Mudar Senha
+              </button>
+            </div>
 
-        <div style={styles.info}>
-          <p><strong>Email:</strong> {user.email}</p>
-        </div>
+            {/* CARD 3: PREFERÊNCIAS (LAYOUT) */}
+            <div className="profile-card">
+              <h3>Preferências</h3>
+              <div className="preference-item">
+                <span>Notificações por E-mail</span>
+                <input type="checkbox" defaultChecked />
+              </div>
+              <div className="preference-item">
+                <span>Modo Escuro (Em breve)</span>
+                <input type="checkbox" disabled />
+              </div>
+            </div>
 
-        <div style={styles.field}>
-          <label>Nome</label>
-          <input
-            style={styles.input}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Digite seu nome"
-          />
-        </div>
+          </div>
 
-        <button
-          style={styles.button}
-          onClick={handleUpdate}
-          disabled={loading}
-        >
-          {loading ? "Salvando..." : "Salvar alterações"}
-        </button>
-
+          {/* MENSAGEM DE FEEDBACK */}
+          {msg.text && (
+            <div className={`toast ${msg.type}`}>
+              {msg.text}
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    background: "#f4f6f8",
-  },
-  card: {
-    width: "400px",
-    padding: "30px",
-    borderRadius: "12px",
-    background: "#fff",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-    textAlign: "center",
-  },
-  avatar: {
-    width: "80px",
-    height: "80px",
-    borderRadius: "50%",
-    background: "#4f46e5",
-    color: "#fff",
-    fontSize: "30px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: "0 auto 15px",
-  },
-  title: {
-    marginBottom: "20px",
-  },
-  info: {
-    marginBottom: "20px",
-  },
-  field: {
-    textAlign: "left",
-    marginBottom: "15px",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    background: "#4f46e5",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-  }
-};
 
 export default Profile;
