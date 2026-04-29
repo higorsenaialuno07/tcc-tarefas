@@ -4,17 +4,17 @@ import { useNavigate } from 'react-router-dom'
 
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
-import Chart from '../components/Chart'
+// Se o seu componente Chart original for baseado em tarefas, 
+// você precisará adaptá-lo para receber os novos dados de vendas.
 
 function Dashboard() {
-  const [tasks, setTasks] = useState([])
-  const [taskTitle, setTaskTitle] = useState("") // Nome único para o input
-  const [priority, setPriority] = useState("Média")
-  const [dueDate, setDueDate] = useState("")
-  const [filter, setFilter] = useState('all')
+  const [sales, setSales] = useState([])
+  const [products, setProducts] = useState([])
+  const [clientsCount, setClientsCount] = useState(0)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  // 1. Verifica se o usuário está logado
+  // 1. Verifica autenticação
   useEffect(() => {
     async function getUser() {
       const { data } = await supabase.auth.getUser()
@@ -23,153 +23,81 @@ function Dashboard() {
     getUser()
   }, [navigate])
 
-  // 2. Carrega as tarefas do banco
-  async function fetchTasks() {
-  const { data, error } = await supabase
-    .from('tasks')
-    .select('*')
-  
-  if (error) console.error("Erro ao carregar:", error.message)
-  else setTasks(data || [])
-}
-  useEffect(() => {
-    fetchTasks()
-  }, [])
+  // 2. Carrega dados reais do sistema comercial
+  async function fetchDashboardData() {
+    setLoading(true)
+    try {
+      // Busca todas as vendas para calcular faturamento
+      const { data: sData } = await supabase.from('sales').select('*')
+      // Busca produtos para verificar estoque crítico
+      const { data: pData } = await supabase.from('products').select('*')
+      // Busca contagem de clientes
+      const { count: cCount } = await supabase.from('clients').select('*', { count: 'exact', head: true })
 
-  // 3. Adiciona nova tarefa
-  async function handleAddTask(e) {
-    e.preventDefault();
-    if (!taskTitle) return alert("Digite um título!");
-
-    const { data: { user } } = await supabase.auth.getUser();
-
-    const { error } = await supabase
-  .from('tasks')
-  .insert([
-    { 
-      title: taskTitle, 
-      user_id: user.id, // O ID que vem do auth.users
-      status: false,
-      priority: priority,
-      due_date: dueDate || null
-    }
-  ]);
-    if (error) {
-      alert("Erro ao adicionar: " + error.message);
-    } else {
-      setTaskTitle(""); 
-      setDueDate("");
-      fetchTasks(); // Recarrega a lista
+      setSales(sData || [])
+      setProducts(pData || [])
+      setClientsCount(cCount || 0)
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  // 4. Deleta tarefa
-  async function deleteTask(id) {
-    await supabase.from('tasks').delete().eq('id', id)
-    fetchTasks()
-  }
+  useEffect(() => { fetchDashboardData() }, [])
 
-  // 5. Alterna entre concluída/pendente
-  async function toggleTask(id, status) {
-    await supabase.from('tasks')
-      .update({ status: !status })
-      .eq('id', id)
-
-    fetchTasks()
-  }
-
-  // 6. Lógica de Filtro
-  const filteredTasks = tasks.filter(task => {
-    if (filter === 'done') return task.status
-    if (filter === 'pending') return !task.status
-    return true
-  })
+  // 3. Cálculos de Negócio
+  const totalFaturado = sales.reduce((acc, sale) => acc + sale.total_price, 0)
+  const estoqueCritico = products.filter(p => p.stock <= 3) // Alerta para menos de 3 itens
 
   return (
     <div className="app-container">
       <Sidebar />
-
       <div className="main-layout">
         <Header />
 
         <main className="dashboard-content">
-          {/* RESUMO */}
-          <div className="summary-container">
-            <div className="summary-card">
-              Total: <strong>{tasks.length}</strong>
+          <h2 style={{ marginBottom: '20px' }}>📊 Visão Geral do Negócio</h2>
+
+          {/* NOVOS CARDS DE RESUMO COMERCIAL */}
+          <div className="summary-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+            <div className="summary-card" style={{ borderLeft: '5px solid #10b981' }}>
+              <small>Faturamento Total</small>
+              <h3>R$ {totalFaturado.toFixed(2)}</h3>
             </div>
-            <div className="summary-card">
-              Concluídas: <strong>{tasks.filter(t => t.status).length}</strong>
+            <div className="summary-card" style={{ borderLeft: '5px solid #3b82f6' }}>
+              <small>Total de Vendas</small>
+              <h3>{sales.length} transações</h3>
             </div>
-            <div className="summary-card">
-              Pendentes: <strong>{tasks.filter(t => !t.status).length}</strong>
+            <div className="summary-card" style={{ borderLeft: '5px solid #8b5cf6' }}>
+              <small>Base de Clientes</small>
+              <h3>{clientsCount} cadastrados</h3>
             </div>
           </div>
 
-          {/* FILTROS */}
-          <div className="filters-bar">
-            <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>Todas</button>
-            <button className={filter === 'done' ? 'active' : ''} onClick={() => setFilter('done')}>Concluídas</button>
-            <button className={filter === 'pending' ? 'active' : ''} onClick={() => setFilter('pending')}>Pendentes</button>
-          </div>
-
-          {/* GRÁFICO */}
-          <div className="chart-box">
-            <Chart tasks={tasks} />
-          </div>
-
-          {/* FORMULÁRIO */}
-          <form className="task-form" onSubmit={handleAddTask}>
-            <input 
-              type="text" 
-              placeholder="Nova tarefa..." 
-              value={taskTitle}
-              onChange={(e) => setTaskTitle(e.target.value)}
-            />
-            
-            <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-              <option value="Alta">Alta</option>
-              <option value="Média">Média</option>
-              <option value="Baixa">Baixa</option>
-            </select>
-
-            <input 
-              type="date" 
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-            />
-
-            <button type="submit">Adicionar</button>
-          </form>
-
-          {/* LISTA DE TAREFAS */}
-          <div className="task-list">
-            {filteredTasks.length === 0 && <p style={{textAlign: 'center', color: '#667'}}>Nenhuma tarefa encontrada.</p>}
-            
-            {filteredTasks.map(task => (
-              <div className="task-item" key={task.id}>
-                <div className="task-main">
-                  <input
-                    type="checkbox"
-                    checked={task.status}
-                    onChange={() => toggleTask(task.id, task.status)}
-                  />
-                  <span className={task.status ? 'done' : ''}>
-                    {task.title}
-                  </span>
-                </div>
-
-                <div className="task-meta">
-                  <span className={`badge ${task.priority.toLowerCase()}`}>
-                    {task.priority}
-                  </span>
-                  <small>{task.due_date || 'Sem data'}</small>
-                  <button className="delete-btn" onClick={() => deleteTask(task.id)}>
-                    🗑
-                  </button>
-                </div>
+          {/* ALERTAS DE ESTOQUE CRÍTICO */}
+          <div style={{ marginTop: '30px', background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+            <h3 style={{ color: '#ef4444', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              ⚠️ Alerta de Estoque Baixo
+            </h3>
+            {estoqueCritico.length > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {estoqueCritico.map(prod => (
+                  <div key={prod.id} style={{ padding: '10px 15px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', color: '#991b1b' }}>
+                    <strong>{prod.name}</strong>: apenas {prod.stock} un.
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <p style={{ color: '#6b7280' }}>Todos os produtos estão com estoque em dia.</p>
+            )}
+          </div>
+
+          {/* ÁREA DO GRÁFICO (Pode ser adaptada para Vendas por Dia) */}
+          <div className="chart-box" style={{ marginTop: '30px' }}>
+            <h3>📈 Volume de Vendas</h3>
+            <p style={{ fontSize: '14px', color: '#666' }}>O gráfico abaixo reflete o histórico de transações registradas.</p>
+            {/* Aqui você mantém o componente <Chart /> mas passa 'sales' em vez de 'tasks' */}
           </div>
         </main>
       </div>

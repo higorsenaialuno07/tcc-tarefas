@@ -6,6 +6,7 @@ import Header from "../components/Header";
 function Profile() {
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState(""); // URL da imagem de perfil
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ type: "", text: "" });
@@ -15,15 +16,54 @@ function Profile() {
       const { data } = await supabase.auth.getUser();
       setUser(data.user);
       setName(data.user?.user_metadata?.name || "");
+      setAvatarUrl(data.user?.user_metadata?.avatar_url || "");
     }
     loadUser();
   }, []);
 
-  // Função para mostrar feedback temporário
   const showMsg = (type, text) => {
     setMsg({ type, text });
     setTimeout(() => setMsg({ type: "", text: "" }), 3000);
   };
+
+  // --- NOVA FUNÇÃO: UPLOAD DE AVATAR ---
+  async function handleAvatarUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // 1. Upload para o bucket (pode usar o mesmo product-images ou criar um novo 'profiles')
+      const { error: uploadError } = await supabase.storage
+        .from('product-images') 
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // 2. Pegar URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      // 3. Atualizar metadados do usuário
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      });
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      showMsg("success", "Foto de perfil atualizada!");
+    } catch (error) {
+      showMsg("error", error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleUpdateProfile() {
     setLoading(true);
@@ -32,17 +72,16 @@ function Profile() {
     });
     setLoading(false);
     
-    if (error) {
-      showMsg("error", "Erro ao atualizar nome.");
-    } else {
-      showMsg("success", "Nome atualizado!");
-      setUser(data.user); // Adicione isso para atualizar o avatar na hora!
+    if (error) showMsg("error", "Erro ao atualizar.");
+    else {
+      showMsg("success", "Dados atualizados!");
+      setUser(data.user);
     }
   }
 
   async function handleChangePassword() {
     if (newPassword.length < 6) {
-      showMsg("error", "A senha deve ter pelo menos 6 caracteres.");
+      showMsg("error", "Senha muito curta.");
       return;
     }
     setLoading(true);
@@ -50,7 +89,7 @@ function Profile() {
     setLoading(false);
     if (error) showMsg("error", "Erro ao mudar senha.");
     else {
-      showMsg("success", "Senha alterada com sucesso!");
+      showMsg("success", "Senha alterada!");
       setNewPassword("");
     }
   }
@@ -62,23 +101,35 @@ function Profile() {
       <Sidebar />
       <div className="main-layout">
         <Header />
-        
         <main className="dashboard-content">
           <div className="profile-grid">
             
-            {/* CARD 1: INFORMAÇÕES BÁSICAS */}
+            {/* CARD 1: PERFIL COM FOTO REAL */}
             <div className="profile-card">
-              <div className="profile-avatar">
-                {name ? name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+              <div className="profile-avatar-container">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="profile-img-preview" />
+                ) : (
+                  <div className="profile-avatar">
+                    {name ? name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <label htmlFor="avatar-input" className="btn-change-avatar">
+                  📷 Alterar Foto
+                </label>
+                <input 
+                  type="file" id="avatar-input" accept="image/*" 
+                  onChange={handleAvatarUpload} hidden 
+                />
               </div>
+
               <h3>Dados Pessoais</h3>
               <p className="profile-email">{user.email}</p>
               
               <div className="profile-field">
                 <label>Nome Completo</label>
                 <input 
-                  type="text" 
-                  value={name} 
+                  type="text" value={name} 
                   onChange={(e) => setName(e.target.value)} 
                   className="profile-input"
                 />
@@ -91,16 +142,13 @@ function Profile() {
             {/* CARD 2: SEGURANÇA */}
             <div className="profile-card">
               <h3>Segurança</h3>
-              <p className="subtitle">Altere sua senha de acesso</p>
-              
+              <p className="subtitle">Mantenha sua conta protegida</p>
               <div className="profile-field">
                 <label>Nova Senha</label>
                 <input 
-                  type="password" 
-                  value={newPassword} 
+                  type="password" value={newPassword} 
                   onChange={(e) => setNewPassword(e.target.value)} 
-                  placeholder="Mínimo 6 caracteres"
-                  className="profile-input"
+                  placeholder="Mínimo 6 caracteres" className="profile-input"
                 />
               </div>
               <button className="btn-password" onClick={handleChangePassword} disabled={loading}>
@@ -108,27 +156,9 @@ function Profile() {
               </button>
             </div>
 
-            {/* CARD 3: PREFERÊNCIAS (LAYOUT) */}
-            <div className="profile-card">
-              <h3>Preferências</h3>
-              <div className="preference-item">
-                <span>Notificações por E-mail</span>
-                <input type="checkbox" defaultChecked />
-              </div>
-              <div className="preference-item">
-                <span>Modo Escuro (Em breve)</span>
-                <input type="checkbox" disabled />
-              </div>
-            </div>
-
           </div>
 
-          {/* MENSAGEM DE FEEDBACK */}
-          {msg.text && (
-            <div className={`toast ${msg.type}`}>
-              {msg.text}
-            </div>
-          )}
+          {msg.text && <div className={`toast ${msg.type}`}>{msg.text}</div>}
         </main>
       </div>
     </div>

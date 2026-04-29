@@ -27,6 +27,7 @@ function Sidebar() {
         <nav className="sidebar-nav">
           <Link to="/dashboard">🏠 Dashboard</Link>
           <Link to="/products">📦 Produtos</Link>
+          <Link to="/clients">👥 Clientes</Link>
           <Link to="/profile">👤 Perfil</Link>
           <Link to="/sales">💰 Vendas</Link>
         </nav>
