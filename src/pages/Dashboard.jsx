@@ -1,20 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '../services/supabase'
 import { useNavigate } from 'react-router-dom'
-
+import '../styles/dashboard.css'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
-// Se o seu componente Chart original for baseado em tarefas, 
-// você precisará adaptá-lo para receber os novos dados de vendas.
+
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from 'recharts'
 
 function Dashboard() {
   const [sales, setSales] = useState([])
   const [products, setProducts] = useState([])
-  const [clientsCount, setClientsCount] = useState(0)
+  const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
+  const [period, setPeriod] = useState('7d')
+  const [error, setError] = useState(null)
+
   const navigate = useNavigate()
 
-  // 1. Verifica autenticação
+  // 🔐 Auth
   useEffect(() => {
     async function getUser() {
       const { data } = await supabase.auth.getUser()
@@ -23,83 +34,191 @@ function Dashboard() {
     getUser()
   }, [navigate])
 
-  // 2. Carrega dados reais do sistema comercial
-  async function fetchDashboardData() {
+  // 🚀 Fetch otimizado
+  async function fetchData() {
     setLoading(true)
-    try {
-      // Busca todas as vendas para calcular faturamento
-      const { data: sData } = await supabase.from('sales').select('*')
-      // Busca produtos para verificar estoque crítico
-      const { data: pData } = await supabase.from('products').select('*')
-      // Busca contagem de clientes
-      const { count: cCount } = await supabase.from('clients').select('*', { count: 'exact', head: true })
+    setError(null)
 
-      setSales(sData || [])
-      setProducts(pData || [])
-      setClientsCount(cCount || 0)
-    } catch (error) {
-      console.error("Erro ao carregar dados:", error)
+    try {
+      const [salesRes, productsRes, clientsRes] = await Promise.all([
+        supabase.from('sales').select('*'),
+        supabase.from('products').select('*'),
+        supabase.from('clients').select('*')
+      ])
+
+      if (salesRes.error || productsRes.error || clientsRes.error) {
+        throw new Error('Erro ao buscar dados')
+      }
+
+      setSales(salesRes.data || [])
+      setProducts(productsRes.data || [])
+      setClients(clientsRes.data || [])
+
+    } catch (err) {
+      setError('Erro ao carregar dashboard')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => { fetchDashboardData() }, [])
+  useEffect(() => {
+    fetchData()
+  }, [])
 
-  // 3. Cálculos de Negócio
-  const totalFaturado = sales.reduce((acc, sale) => acc + sale.total_price, 0)
-  const estoqueCritico = products.filter(p => p.stock <= 3) // Alerta para menos de 3 itens
+  // 📅 FILTRO DE PERÍODO
+  const filteredSales = useMemo(() => {
+    const now = new Date()
+    let days = 7
+
+    if (period === '1d') days = 1
+    if (period === '30d') days = 30
+
+    const limitDate = new Date()
+    limitDate.setDate(now.getDate() - days)
+
+    return sales.filter(s => new Date(s.created_at) >= limitDate)
+  }, [sales, period])
+
+  // 💰 FORMAT
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value)
+
+  // 📊 MÉTRICAS
+  const total = filteredSales.reduce((acc, s) => acc + s.total_price, 0)
+  const totalAll = sales.reduce((acc, s) => acc + s.total_price, 0)
+
+  const ticket = filteredSales.length ? total / filteredSales.length : 0
+
+  // 📈 Crescimento simples
+  const previousTotal = totalAll - total
+  const growth = previousTotal > 0
+    ? ((total - previousTotal) / previousTotal) * 100
+    : 0
+
+  // 📦 Top produtos
+  const topProducts = useMemo(() => {
+    const map = {}
+
+    sales.forEach(s => {
+      if (!s.product_name) return
+      map[s.product_name] = (map[s.product_name] || 0) + 1
+    })
+
+    return Object.entries(map)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+  }, [sales])
+
+  // 👥 Clientes recentes
+  const recentClients = clients.slice(-5).reverse()
+
+  // 📉 Estoque crítico
+  const lowStock = products.filter(p => p.stock <= 3)
+
+  // 📈 Gráfico
+  const chartData = filteredSales.map(s => ({
+    date: s.created_at.split('T')[0],
+    total: s.total_price
+  }))
+
+  if (loading) return <p>Carregando...</p>
+  if (error) return <p>{error}</p>
 
   return (
     <div className="app-container">
       <Sidebar />
+
       <div className="main-layout">
         <Header />
+<main className="dashboard-content">
+  <h2 className="page-title">📊 Dashboard Profissional</h2>
 
-        <main className="dashboard-content">
-          <h2 style={{ marginBottom: '20px' }}>📊 Visão Geral do Negócio</h2>
+  {/* FILTRO */}
+  <div className="filters">
+    <button onClick={() => setPeriod('1d')}>Hoje</button>
+    <button onClick={() => setPeriod('7d')}>7 dias</button>
+    <button onClick={() => setPeriod('30d')}>30 dias</button>
+  </div>
 
-          {/* NOVOS CARDS DE RESUMO COMERCIAL */}
-          <div className="summary-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-            <div className="summary-card" style={{ borderLeft: '5px solid #10b981' }}>
-              <small>Faturamento Total</small>
-              <h3>R$ {totalFaturado.toFixed(2)}</h3>
-            </div>
-            <div className="summary-card" style={{ borderLeft: '5px solid #3b82f6' }}>
-              <small>Total de Vendas</small>
-              <h3>{sales.length} transações</h3>
-            </div>
-            <div className="summary-card" style={{ borderLeft: '5px solid #8b5cf6' }}>
-              <small>Base de Clientes</small>
-              <h3>{clientsCount} cadastrados</h3>
-            </div>
-          </div>
+  {/* CARDS */}
+  <div className="grid">
+    <div className="card">
+      <p>Faturamento</p>
+      <h3>{formatCurrency(total)}</h3>
+    </div>
 
-          {/* ALERTAS DE ESTOQUE CRÍTICO */}
-          <div style={{ marginTop: '30px', background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-            <h3 style={{ color: '#ef4444', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              ⚠️ Alerta de Estoque Baixo
-            </h3>
-            {estoqueCritico.length > 0 ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                {estoqueCritico.map(prod => (
-                  <div key={prod.id} style={{ padding: '10px 15px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '8px', color: '#991b1b' }}>
-                    <strong>{prod.name}</strong>: apenas {prod.stock} un.
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ color: '#6b7280' }}>Todos os produtos estão com estoque em dia.</p>
-            )}
-          </div>
+    <div className="card">
+      <p>Ticket Médio</p>
+      <h3>{formatCurrency(ticket)}</h3>
+    </div>
 
-          {/* ÁREA DO GRÁFICO (Pode ser adaptada para Vendas por Dia) */}
-          <div className="chart-box" style={{ marginTop: '30px' }}>
-            <h3>📈 Volume de Vendas</h3>
-            <p style={{ fontSize: '14px', color: '#666' }}>O gráfico abaixo reflete o histórico de transações registradas.</p>
-            {/* Aqui você mantém o componente <Chart /> mas passa 'sales' em vez de 'tasks' */}
-          </div>
-        </main>
+    <div className="card">
+      <p>Crescimento</p>
+      <h3>{growth.toFixed(1)}%</h3>
+    </div>
+
+    <div className="card">
+      <p>Vendas</p>
+      <h3>{filteredSales.length}</h3>
+    </div>
+  </div>
+
+  {/* GRID PRINCIPAL */}
+  <div className="dashboard-grid">
+
+    {/* ESQUERDA */}
+    <div className="left">
+      <div className="chart-container">
+        <h3>📈 Vendas</h3>
+
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Line dataKey="total" stroke="#22c55e" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+
+    {/* DIREITA */}
+    <div className="right">
+
+      <div className="card">
+        <h3>🏆 Top Produtos</h3>
+        {topProducts.map(([name, count]) => (
+          <p className="list-item" key={name}>
+            {name} - {count} vendas
+          </p>
+        ))}
+      </div>
+
+      <div className="card">
+        <h3>👥 Clientes Recentes</h3>
+        {recentClients.map(c => (
+          <p className="list-item" key={c.id}>
+            {c.name}
+          </p>
+        ))}
+      </div>
+
+      <div className="card">
+        <h3>⚠️ Estoque Baixo</h3>
+        {lowStock.map(p => (
+          <p className="list-item" key={p.id}>
+            {p.name} ({p.stock})
+          </p>
+        ))}
+      </div>
+
+    </div>
+  </div>
+</main>
       </div>
     </div>
   )

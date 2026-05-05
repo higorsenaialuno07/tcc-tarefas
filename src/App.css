@@ -194,32 +194,29 @@ h2.logo,
 
 /* HEADER */
 .header {
-  height: 60px;
-  background: #fff;
+  /* height: 60px; */
+  /* background: #fff; */
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   padding: 0 20px;
-  z-index: 90;
 
   position: fixed;
   top: 0;
-  left: 220px;
+  left: 220px;   /* controla alinhamento */
   right: 0;
 
-  border-bottom: 1px solid #eee;
-  z-index: 20;
+  /* border-bottom: 1px solid #eee; */
+  z-index: 100;
 }
 
-/* CONTEÚDO */
-.dashboard-content {
-  margin-left: 220px;
-  margin-top: 60px; /* altura do header */
-  padding: 30px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #111827;
+  font-weight: 600;
 }
+
 
 /* CARDS */
 .summary,

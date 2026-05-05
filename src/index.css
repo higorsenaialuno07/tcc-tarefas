@@ -28,7 +28,7 @@ body {
   padding: 25px 15px;
   display: flex;
   flex-direction: column;
-  z-index: 100;
+  z-index: 1000;
   box-sizing: border-box;
   box-shadow: 2px 0 10px rgba(0,0,0,0.2);
 }
@@ -36,43 +36,35 @@ body {
 /* 3. Main Layout (O "palco" da direita) */
 .main-layout {
   flex: 1;
-  margin-left: var(--sidebar-width); /* Crucial: empurra tudo para a direita da sidebar */
+  margin-left: var(--sidebar-width);
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 /* 4. Header (Fixo no topo da Main Layout) */
-.header {
-  height: var(--header-height);
-  background: white;
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: var(--sidebar-width); /* Começa exatamente onde a sidebar termina */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 30px;
-  border-bottom: 1px solid #e2e8f0;
-  z-index: 90;
-}
+  /* .header {
+    height: var(--header-height);
+    background: white;
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    border-bottom: 1px solid #e2e8f0;
+    z-index: 90;
+  } */
 
-/* 5. Conteúdo do Dashboard (Abaixo do Header) */
-.dashboard-content {
-  max-width: 1200px;
-  margin: var(--header-height) auto 0 auto;
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
 
-/* 6. Cards de Resumo (Estilo Profissional) */
+
+/* 5. Cards de Resumo (Estilo Profissional) */
 .summary-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Divide em 3 colunas iguais */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
-  margin-bottom: 20px;
 }
 
 .summary-card {
@@ -152,6 +144,19 @@ body {
 .task-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.list-item{
+  background: #f8fafc;
+  padding: 8px;
+  border-radius: 8px;
+  margin-top: 8px;
 }
 
 .filters-bar {
@@ -376,4 +381,21 @@ body {
 @keyframes slideIn {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
+}
+
+.chart-container {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  height: 350px; /* reduz um pouco */
+}
+
+/* 📊 CONTEÚDO DO DASHBOARD (ESSENCIAL) */
+.dashboard-content {
+  margin-top: var(--header-height); /* desce abaixo do header */
+  padding: 30px;
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
 }

@@ -14,36 +14,14 @@ function Header() {
   }, []);
 
   return (
-    <div style={styles.header}>
-      <h3>Bem-vindo 👋</h3>
+    <header className="header">
+      <h3>Bem-vindo</h3>
 
-      <div style={styles.userBox}>
+      <div className="user-box">
         <span>{user?.email}</span>
       </div>
-    </div>
+    </header>
   );
 }
-
-const styles = {
-  header: {
-    height: "60px",
-    background: "#fff",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "0 20px",
-    marginLeft: "220px",
-    borderBottom: "1px solid #eee",
-    position: "fixed",
-    top: 0,
-    right: 0,
-    left: "220px"
-  },
-  userBox: {
-    background: "#f3f4f6",
-    padding: "8px 12px",
-    borderRadius: "8px"
-  }
-};
 
 export default Header;
