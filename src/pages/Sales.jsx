@@ -13,7 +13,13 @@ function Sales() {
   const [loading, setLoading] = useState(false)
 
   async function fetchData() {
-    const { data: pData } = await supabase.from('products').select('*').order('name')
+    const { data: { user } } = await supabase.auth.getUser()
+
+const { data: pData } = await supabase
+  .from('products')
+  .select('*')
+  .eq('user_id', user.id)
+  .order('name')
     const { data: cData } = await supabase.from('clients').select('*').order('name')
     const { data: sData } = await supabase
       .from('sales')

@@ -9,126 +9,223 @@ function Clients() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
+  const [editingClient, setEditingClient] = useState(null)
 
-  // 1. Carregar lista de clientes
+  // 🔄 Buscar clientes
   async function fetchClients() {
-    const { data } = await supabase.from('clients').select('*').order('name')
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const { data } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('name')
+
     setClients(data || [])
   }
 
-  useEffect(() => { fetchClients() }, [])
+  useEffect(() => {
+    fetchClients()
+  }, [])
 
-  // 2. Adicionar novo cliente
+  // ✏️ Iniciar edição
+  function startEdit(client) {
+    setEditingClient(client)
+    setName(client.name)
+    setEmail(client.email)
+    setPhone(client.phone)
+
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // ❌ Cancelar edição
+  function cancelEdit() {
+    setEditingClient(null)
+    setName('')
+    setEmail('')
+    setPhone('')
+  }
+
+  // ➕ / 💾 Adicionar ou editar
   async function handleAddClient(e) {
     e.preventDefault()
     setLoading(true)
+
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { error } = await supabase.from('clients').insert([{
-      name, email, phone, user_id: user.id
-    }])
+    const clientData = {
+      name,
+      email,
+      phone,
+      user_id: user.id
+    }
+
+    console.log("EDITANDO:", editingClient)
+    console.log("DADOS:", clientData)
+
+    let error
+
+    if (editingClient) {
+      const res = await supabase
+        .from('clients')
+        .update(clientData)
+        .eq('id', editingClient.id)
+        .eq('user_id', user.id)
+
+      error = res.error
+    } else {
+      const res = await supabase
+        .from('clients')
+        .insert([clientData])
+
+      error = res.error
+    }
 
     setLoading(false)
+
     if (error) {
-      alert("Erro ao cadastrar: " + error.message)
+      console.error(error)
+      alert("Erro: " + error.message)
     } else {
-      alert("Cliente cadastrado com sucesso!")
-      setName(''); setEmail(''); setPhone('');
+      cancelEdit()
       fetchClients()
     }
   }
 
-  // 3. Função para Excluir Cliente (Ação do botão 🗑️)
-  async function handleDeleteClient(id, clientName) {
-    if (window.confirm(`Tem certeza que deseja remover o cliente ${clientName}?`)) {
-      const { error } = await supabase.from('clients').delete().eq('id', id)
-      
-      if (error) alert("Erro ao excluir!")
-      else fetchClients()
+
+// 🗑️ Excluir
+async function handleDeleteClient(id, clientName) {
+  if (window.confirm(`Remover cliente ${clientName}?`)) {
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const { error: deleteError } = await supabase
+      .from('clients')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id)
+
+    if (deleteError) {
+      alert("Erro ao excluir")
+      console.error(deleteError)
+    } else {
+      fetchClients()
     }
   }
+}
 
   return (
     <div className="app-container">
       <Sidebar />
+
       <div className="main-layout">
         <Header />
+
         <main className="dashboard-content">
-          <h2>👥 Gestão de Clientes</h2>
-          
-          {/* Formulário de Cadastro com visual limpo */}
-          <form className="task-form" onSubmit={handleAddClient} style={{ marginBottom: '30px' }}>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input 
-                placeholder="Nome Completo" 
-                value={name} 
-                onChange={e => setName(e.target.value)} 
-                required 
-                style={{ flex: 2, padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
+          <h2 className="page-title">👥 Gestão de Clientes</h2>
+
+          {/* FORM */}
+          <form className="client-form" onSubmit={handleAddClient}>
+            <div className="form-grid">
+              <input
+                placeholder="Nome completo"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
               />
-              <input 
-                placeholder="E-mail" 
-                type="email" 
-                value={email} 
-                onChange={e => setEmail(e.target.value)} 
-                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
+
+              <input
+                type="email"
+                placeholder="E-mail"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
               />
-              <input 
-                placeholder="WhatsApp" 
-                value={phone} 
-                onChange={e => setPhone(e.target.value)} 
-                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
+
+              <input
+                placeholder="WhatsApp"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
               />
-              <button 
-                type="submit" 
-                disabled={loading}
-                style={{ padding: '10px 20px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-              >
-                {loading ? 'Salvando...' : 'Adicionar'}
+            </div>
+
+            <div className="form-actions">
+              <button type="submit" disabled={loading} className="btn-primary">
+                {loading
+                  ? 'Salvando...'
+                  : editingClient
+                    ? '💾 Salvar Alterações'
+                    : '➕ Adicionar Cliente'}
               </button>
+
+              {editingClient && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="btn-secondary"
+                >
+                  Cancelar
+                </button>
+              )}
             </div>
           </form>
 
-          {/* Tabela de Clientes Organizada */}
+          {/* TABELA */}
           <div className="table-container">
             <table className="product-table">
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left' }}>Nome</th>
-                  <th style={{ textAlign: 'left' }}>Contato</th>
-                  <th style={{ textAlign: 'center' }}>Ações</th>
+                  <th>Nome</th>
+                  <th>Contato</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
+
               <tbody>
                 {clients.length > 0 ? (
                   clients.map(c => (
                     <tr key={c.id}>
                       <td><strong>{c.name}</strong></td>
-                      <td>{c.phone || c.email || '---'}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <button 
-                          onClick={() => handleDeleteClient(c.id, c.name)}
-                          style={{ background: '#ff4d4d', border: 'none', padding: '6px 10px', borderRadius: '6px', color: 'white', cursor: 'pointer', transition: '0.2s' }}
-                          onMouseOver={(e) => e.target.style.opacity = '0.8'}
-                          onMouseOut={(e) => e.target.style.opacity = '1'}
-                        >
-                          🗑️ Excluir
-                        </button>
+
+                      <td>
+                        {c.phone || c.email || '---'}
+                      </td>
+
+                      <td>
+                        <div className="actions">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(c)}
+                            className="btn-edit"
+                          >
+                            ✏️
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteClient(c.id, c.name)}
+                            className="btn-delete"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" style={{ textAlign: 'center', padding: '20px', color: '#666' }}>Nenhum cliente cadastrado.</td>
+                    <td colSpan="3" className="empty">
+                      Nenhum cliente cadastrado.
+                    </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+
         </main>
       </div>
     </div>
   )
 }
 
-export default Clients
+export default Clients  

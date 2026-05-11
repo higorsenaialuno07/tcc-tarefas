@@ -6,159 +6,270 @@ import Header from "../components/Header";
 function Profile() {
   const [user, setUser] = useState(null);
   const [name, setName] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState(""); // URL da imagem de perfil
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState({ type: "", text: "" });
 
+  const [loadingAvatar, setLoadingAvatar] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [loadingPassword, setLoadingPassword] = useState(false);
+
+  const [msg, setMsg] = useState({
+    type: "",
+    text: ""
+  });
+
+  // 🔄 Carregar usuário
   useEffect(() => {
     async function loadUser() {
       const { data } = await supabase.auth.getUser();
+
       setUser(data.user);
+
       setName(data.user?.user_metadata?.name || "");
-      setAvatarUrl(data.user?.user_metadata?.avatar_url || "");
+
+      setAvatarUrl(
+        data.user?.user_metadata?.avatar_url || ""
+      );
     }
+
     loadUser();
   }, []);
 
-  const showMsg = (type, text) => {
+  // 🔔 Toast
+  function showMsg(type, text) {
     setMsg({ type, text });
-    setTimeout(() => setMsg({ type: "", text: "" }), 3000);
-  };
 
-  // --- NOVA FUNÇÃO: UPLOAD DE AVATAR ---
+    setTimeout(() => {
+      setMsg({ type: "", text: "" });
+    }, 3000);
+  }
+
+  // 📷 Upload Avatar
   async function handleAvatarUpload(e) {
     const file = e.target.files[0];
-    if (!file) return;
 
-    setLoading(true);
+    if (!file || !user) return;
+
+    setLoadingAvatar(true);
+
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const fileExt = file.name.split(".").pop();
 
-      // 1. Upload para o bucket (pode usar o mesmo product-images ou criar um novo 'profiles')
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
       const { error: uploadError } = await supabase.storage
-        .from('product-images') 
-        .upload(filePath, file);
+        .from("avatars")
+        .upload(fileName, file, {
+          upsert: true
+        });
 
       if (uploadError) throw uploadError;
 
-      // 2. Pegar URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl }
+      } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
 
-      // 3. Atualizar metadados do usuário
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl }
-      });
+      const { error: updateError } =
+        await supabase.auth.updateUser({
+          data: {
+            avatar_url: publicUrl
+          }
+        });
 
       if (updateError) throw updateError;
 
       setAvatarUrl(publicUrl);
-      showMsg("success", "Foto de perfil atualizada!");
+
+      showMsg("success", "Foto atualizada!");
+
     } catch (error) {
       showMsg("error", error.message);
     } finally {
-      setLoading(false);
+      setLoadingAvatar(false);
     }
   }
 
+  // 👤 Atualizar nome
   async function handleUpdateProfile() {
-    setLoading(true);
-    const { data, error } = await supabase.auth.updateUser({
-      data: { name }
-    });
-    setLoading(false);
-    
-    if (error) showMsg("error", "Erro ao atualizar.");
-    else {
-      showMsg("success", "Dados atualizados!");
+    setLoadingProfile(true);
+
+    const { data, error } =
+      await supabase.auth.updateUser({
+        data: {
+          name
+        }
+      });
+
+    setLoadingProfile(false);
+
+    if (error) {
+      showMsg("error", "Erro ao atualizar.");
+    } else {
       setUser(data.user);
+      showMsg("success", "Dados atualizados!");
     }
   }
 
+  // 🔒 Alterar senha
   async function handleChangePassword() {
     if (newPassword.length < 6) {
       showMsg("error", "Senha muito curta.");
       return;
     }
-    setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setLoading(false);
-    if (error) showMsg("error", "Erro ao mudar senha.");
-    else {
-      showMsg("success", "Senha alterada!");
+
+    setLoadingPassword(true);
+
+    const { error } =
+      await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+    setLoadingPassword(false);
+
+    if (error) {
+      showMsg("error", "Erro ao mudar senha.");
+    } else {
       setNewPassword("");
+      showMsg("success", "Senha alterada!");
     }
   }
 
-  if (!user) return <div className="loading">Carregando...</div>;
+  if (!user) {
+    return (
+      <div className="loading">
+        Carregando...
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
       <Sidebar />
+
       <div className="main-layout">
         <Header />
+
         <main className="dashboard-content">
+
           <div className="profile-grid">
-            
-            {/* CARD 1: PERFIL COM FOTO REAL */}
+
+            {/* CARD PERFIL */}
             <div className="profile-card">
+
               <div className="profile-avatar-container">
+
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar" className="profile-img-preview" />
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar"
+                    className="profile-img-preview"
+                    onError={() => setAvatarUrl("")}
+                  />
                 ) : (
                   <div className="profile-avatar">
-                    {name ? name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                    {name?.charAt(0).toUpperCase() ||
+                      user.email?.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <label htmlFor="avatar-input" className="btn-change-avatar">
-                  📷 Alterar Foto
+
+                <label
+                  htmlFor="avatar-input"
+                  className="btn-change-avatar"
+                >
+                  {loadingAvatar
+                    ? "Enviando..."
+                    : "📷 Alterar Foto"}
                 </label>
-                <input 
-                  type="file" id="avatar-input" accept="image/*" 
-                  onChange={handleAvatarUpload} hidden 
+
+                <input
+                  type="file"
+                  id="avatar-input"
+                  accept="image/*"
+                  hidden
+                  onChange={handleAvatarUpload}
                 />
+
               </div>
 
               <h3>Dados Pessoais</h3>
-              <p className="profile-email">{user.email}</p>
-              
+
+              <p className="profile-email">
+                {user.email}
+              </p>
+
               <div className="profile-field">
                 <label>Nome Completo</label>
-                <input 
-                  type="text" value={name} 
-                  onChange={(e) => setName(e.target.value)} 
+
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
                   className="profile-input"
                 />
               </div>
-              <button className="btn-save" onClick={handleUpdateProfile} disabled={loading}>
-                {loading ? "Salvando..." : "Atualizar Nome"}
+
+              <button
+                className="btn-save"
+                onClick={handleUpdateProfile}
+                disabled={loadingProfile}
+              >
+                {loadingProfile
+                  ? "Salvando..."
+                  : "Atualizar Nome"}
               </button>
+
             </div>
 
-            {/* CARD 2: SEGURANÇA */}
+            {/* CARD SENHA */}
             <div className="profile-card">
+
               <h3>Segurança</h3>
-              <p className="subtitle">Mantenha sua conta protegida</p>
+
+              <p className="subtitle">
+                Mantenha sua conta protegida
+              </p>
+
               <div className="profile-field">
+
                 <label>Nova Senha</label>
-                <input 
-                  type="password" value={newPassword} 
-                  onChange={(e) => setNewPassword(e.target.value)} 
-                  placeholder="Mínimo 6 caracteres" className="profile-input"
+
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) =>
+                    setNewPassword(e.target.value)
+                  }
+                  placeholder="Mínimo 6 caracteres"
+                  className="profile-input"
                 />
+
               </div>
-              <button className="btn-password" onClick={handleChangePassword} disabled={loading}>
-                Mudar Senha
+
+              <button
+                className="btn-password"
+                onClick={handleChangePassword}
+                disabled={loadingPassword}
+              >
+                {loadingPassword
+                  ? "Alterando..."
+                  : "Mudar Senha"}
               </button>
+
             </div>
 
           </div>
 
-          {msg.text && <div className={`toast ${msg.type}`}>{msg.text}</div>}
+          {/* TOAST */}
+          {msg.text && (
+            <div className={`toast ${msg.type}`}>
+              {msg.text}
+            </div>
+          )}
+
         </main>
       </div>
     </div>

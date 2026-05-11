@@ -1,8 +1,87 @@
+/* Variáveis para facilitar a manutenção */
 :root {
-  --sidebar-width: 240px;
-  --header-height: 65px;
-  --bg-color: #f0f2f5;
-  --primary-blue: #2563eb;
+  --sidebar-width: 260px;
+  --bg-main: #f8fafc;
+  --sidebar-bg: #0f172a;
+  --primary-blue: #3b82f6;
+  --text-main: #1e293b;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* 1. Correção e Estilo da Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--sidebar-bg);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000; /* Sidebar sempre por cima para evitar o erro do "branco" */
+  padding: 24px;
+  color: white;
+}
+
+.sidebar h2 {
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  margin-bottom: 40px;
+  color: #fff;
+}
+
+/* 2. Correção do Header (Onde o branco invadia) */
+.header {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width); /* Alinhado exatamente onde termina a sidebar */
+  right: 0;
+  height: 70px;
+  background: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  z-index: 900; /* Menor que a sidebar */
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  border: none;
+}
+
+/* 3. Área de Conteúdo Principal */
+.main-layout {
+  margin-left: var(--sidebar-width);
+  padding-top: 70px; /* Para não ficar embaixo do header fixo */
+  background-color: var(--bg-main);
+  min-height: 100vh;
+}
+
+.dashboard-content {
+  padding: 32px;
+}
+
+/* 4. Estilo dos Cards (Melhoria de UI) */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* 5. Estilo para as Tabelas e Inputs */
+input, select {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 14px;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* 1. Reset e Layout Base */
@@ -258,33 +337,101 @@ body {
 }
 
 .profile-card h3 {
-  margin-top: 0;
-  color: #1e293b;
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #111827;
+} 
+
+.profile-card p {
+  color: #6b7280;
+  margin-bottom: 10px;
+  font-size: 15px;
 }
+
+.profile-card strong {
+  color: #111827;
+} 
+
+
 
 .profile-card {
   width: 100%;
   max-width: 450px;
-  background: white;
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  background: #ffffff;
+  padding: 35px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
   text-align: center;
+  transition: all 0.25s ease;
+}
+
+.profile-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.profile-actions button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile-actions button:hover {
+  transform: translateY(-2px);
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .profile-avatar {
   width: 100px;
   height: 100px;
-  background: #2563eb;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: white;
-  font-size: 40px;
-  font-weight: bold;
+  font-size: 34px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  margin: 0 auto 20px;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+  margin: 0 auto 18px;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.30);
+  border: 4px solid #eff6ff;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-img-preview {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e2e8f0;
+  margin-bottom: 10px;
 }
 
 .profile-title {
@@ -299,20 +446,23 @@ body {
 }
 
 
+/* CAMPOS */
 .profile-field {
-  text-align: left;
   margin-bottom: 15px;
+}
+
+.profile-field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 5px;
 }
 
 .profile-email {
   color: #64748b;
-  margin-bottom: 20px;
   font-size: 0.9rem;
-}
-
-.profile-field {
-  text-align: left;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .profile-field label {
@@ -325,37 +475,69 @@ body {
 
 .profile-input {
   width: 100%;
-  padding: 10px;
+  padding: 11px 12px;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 10px;
   box-sizing: border-box;
-  font-size: 1rem;
+  font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
+  background: #f8fafc;
 }
 
 .profile-input:focus {
   border-color: #2563eb;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.profile-input:hover {
+  border-color: #cbd5f5;
+}
+
+/* placeholder */
+.profile-input::placeholder {
+  color: #94a3b8;
 }
 
 .profile-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 30px;
+  width: 100%;
 }
 
-.btn-save, .btn-password {
+.btn-save,
+.btn-password {
   width: 100%;
   padding: 12px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  transition: 0.3s;
+  transition: 0.2s;
 }
 
-.btn-save { background: #2563eb; color: white; }
+.btn-save:hover {
+  background: #2563eb;
+}
+
+.btn-password:hover {
+  background: #0f172a;
+}
+
+.btn-logout {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-logout:hover {
+  background: #dc2626;
+}
+
+
+.btn-save { background: #3b82f6; color: white; }
 .btn-password { background: #1e293b; color: white; margin-top: 10px; }
 
 .preference-item {
@@ -369,25 +551,36 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  padding: 12px 24px;
+  padding: 12px 20px;
   border-radius: 8px;
   color: white;
   font-weight: bold;
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.3s ease;
 }
+
 .toast.success { background-color: #10b981; }
 .toast.error { background-color: #ef4444; }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .chart-container {
+  width: 100%;
   background: white;
-  padding: 20px;
-  border-radius: 16px;
-  height: 350px; /* reduz um pouco */
+  padding: 24px;
+  border-radius: 18px;
+  min-height: 520px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid #e5e7eb;
+  box-sizing: border-box;
 }
 
 /* 📊 CONTEÚDO DO DASHBOARD (ESSENCIAL) */
@@ -398,4 +591,18 @@ body {
   max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* BOTÃO ALTERAR FOTO */
+.btn-change-avatar {
+  display: inline-block;
+  font-size: 12px;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-change-avatar:hover {
+  text-decoration: underline;
 }
