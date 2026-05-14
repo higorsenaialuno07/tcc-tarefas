@@ -7,16 +7,20 @@
 }
 
 body {
-  background: #f5f7fb;
-  color: #1f2937;
+  background: #eef2f7;
+  font-family: 'Inter', sans-serif;
 }
 
 /* LAYOUT */
 .app-container {
-  display: flex;
-  height: 100vh;
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    #eef2f7 0%,
+    #f8fafc 50%,
+    #e2e8f0 100%
+  );
 }
-
 .main-layout {
   flex: 1;
   margin-left: var(--sidebar-width);
@@ -66,6 +70,15 @@ header {
   width: 100%;
   padding: 30px;
   overflow-y: auto;
+
+  background: linear-gradient(
+    135deg,
+    #eef2f7 0%,
+    #f8fafc 50%,
+    #e2e8f0 100%
+  );
+
+  min-height: 100vh;
 }
 
 .dashboard-content h2 {
@@ -215,4 +228,37 @@ button:hover {
 .left, .right {
   width: 100%;
   min-width: 0; /* IMPORTANTE PRA GRID */
+}
+
+.card,
+.chart-container,
+.table-container,
+.profile-card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255,255,255,0.4);
+
+  box-shadow:
+    0 4px 20px rgba(15, 23, 42, 0.05),
+    0 2px 6px rgba(15, 23, 42, 0.03);
+
+  border-radius: 20px;
+}
+
+.card,
+.chart-container,
+.table-container,
+.profile-card,
+.product-form {
+  transition: all 0.25s ease;
+}
+
+.card:hover,
+.chart-container:hover,
+.table-container:hover,
+.profile-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.08);
 }
