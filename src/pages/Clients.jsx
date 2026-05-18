@@ -1,54 +1,89 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../services/supabase'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 
 function Clients() {
   const [clients, setClients] = useState([])
+  const [filteredClients, setFilteredClients] = useState([])
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [editingClient, setEditingClient] = useState(null)
+
+  // 📊 Estatísticas
+  const totalClients = clients.length
+
+  const clientsWithPhone = useMemo(() => {
+    return clients.filter(c => c.phone).length
+  }, [clients])
+
+  const clientsWithEmail = useMemo(() => {
+    return clients.filter(c => c.email).length
+  }, [clients])
 
   // 🔄 Buscar clientes
   async function fetchClients() {
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('clients')
       .select('*')
       .eq('user_id', user.id)
       .order('name')
 
-    setClients(data || [])
+    if (!error) {
+      setClients(data || [])
+      setFilteredClients(data || [])
+    }
   }
 
   useEffect(() => {
     fetchClients()
   }, [])
 
+  // 🔎 Pesquisa
+  useEffect(() => {
+    const filtered = clients.filter(client =>
+      client.name?.toLowerCase().includes(search.toLowerCase()) ||
+      client.email?.toLowerCase().includes(search.toLowerCase()) ||
+      client.phone?.includes(search)
+    )
+
+    setFilteredClients(filtered)
+  }, [search, clients])
+
   // ✏️ Iniciar edição
   function startEdit(client) {
     setEditingClient(client)
+
     setName(client.name)
     setEmail(client.email)
     setPhone(client.phone)
 
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
   }
 
   // ❌ Cancelar edição
   function cancelEdit() {
     setEditingClient(null)
+
     setName('')
     setEmail('')
     setPhone('')
   }
 
-  // ➕ / 💾 Adicionar ou editar
+  // 💾 Salvar cliente
   async function handleAddClient(e) {
     e.preventDefault()
+
     setLoading(true)
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -60,9 +95,6 @@ function Clients() {
       user_id: user.id
     }
 
-    console.log("EDITANDO:", editingClient)
-    console.log("DADOS:", clientData)
-
     let error
 
     if (editingClient) {
@@ -73,6 +105,7 @@ function Clients() {
         .eq('user_id', user.id)
 
       error = res.error
+
     } else {
       const res = await supabase
         .from('clients')
@@ -84,35 +117,39 @@ function Clients() {
     setLoading(false)
 
     if (error) {
+      alert(error.message)
       console.error(error)
-      alert("Erro: " + error.message)
+
     } else {
       cancelEdit()
       fetchClients()
     }
   }
 
+  // 🗑️ Excluir
+  async function handleDeleteClient(id, clientName) {
+    const confirmDelete = window.confirm(
+      `Deseja remover ${clientName}?`
+    )
 
-// 🗑️ Excluir
-async function handleDeleteClient(id, clientName) {
-  if (window.confirm(`Remover cliente ${clientName}?`)) {
+    if (!confirmDelete) return
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { error: deleteError } = await supabase
+    const { error } = await supabase
       .from('clients')
       .delete()
       .eq('id', id)
       .eq('user_id', user.id)
 
-    if (deleteError) {
-      alert("Erro ao excluir")
-      console.error(deleteError)
+    if (error) {
+      alert('Erro ao excluir cliente')
+      console.error(error)
+
     } else {
       fetchClients()
     }
   }
-}
 
   return (
     <div className="app-container">
@@ -122,104 +159,202 @@ async function handleDeleteClient(id, clientName) {
         <Header />
 
         <main className="dashboard-content">
-          <h2 className="page-title">👥 Gestão de Clientes</h2>
+
+          {/* HEADER */}
+          <div className="page-header">
+            <div>
+              <h1 className="page-title">
+                👥 Gestão de Clientes
+              </h1>
+
+              <p className="page-subtitle">
+                Gerencie clientes do sistema
+              </p>
+            </div>
+          </div>
+
+          {/* STATS */}
+          <div className="stats-grid">
+
+            <div className="stats-card">
+              <span>Total</span>
+              <h2>{totalClients}</h2>
+            </div>
+
+            <div className="stats-card">
+              <span>Com WhatsApp</span>
+              <h2>{clientsWithPhone}</h2>
+            </div>
+
+            <div className="stats-card">
+              <span>Com E-mail</span>
+              <h2>{clientsWithEmail}</h2>
+            </div>
+
+          </div>
 
           {/* FORM */}
-          <form className="client-form" onSubmit={handleAddClient}>
-            <div className="form-grid">
-              <input
-                placeholder="Nome completo"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-              />
+          <div className="form-container">
 
-              <input
-                type="email"
-                placeholder="E-mail"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
-
-              <input
-                placeholder="WhatsApp"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-              />
+            <div className="section-title">
+              {editingClient
+                ? '✏️ Editando Cliente'
+                : '➕ Novo Cliente'}
             </div>
 
-            <div className="form-actions">
-              <button type="submit" disabled={loading} className="btn-primary">
-                {loading
-                  ? 'Salvando...'
-                  : editingClient
-                    ? '💾 Salvar Alterações'
-                    : '➕ Adicionar Cliente'}
-              </button>
+            <form
+              className="client-form"
+              onSubmit={handleAddClient}
+            >
 
-              {editingClient && (
+              <div className="form-grid">
+
+                <input
+                  type="text"
+                  placeholder="Nome completo"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                />
+
+                <input
+                  type="email"
+                  placeholder="E-mail"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                />
+
+                <input
+                  type="text"
+                  placeholder="WhatsApp"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                />
+
+              </div>
+
+              <div className="form-actions">
+
                 <button
-                  type="button"
-                  onClick={cancelEdit}
-                  className="btn-secondary"
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary"
                 >
-                  Cancelar
+                  {loading
+                    ? 'Salvando...'
+                    : editingClient
+                      ? '💾 Salvar'
+                      : '➕ Adicionar'}
                 </button>
-              )}
-            </div>
-          </form>
+
+                {editingClient && (
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="btn-secondary"
+                  >
+                    Cancelar
+                  </button>
+                )}
+
+              </div>
+
+            </form>
+          </div>
+
+          {/* PESQUISA */}
+          <div className="search-container">
+
+            <input
+              type="text"
+              placeholder="🔎 Buscar cliente..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="search-input"
+            />
+
+          </div>
 
           {/* TABELA */}
           <div className="table-container">
+
             <table className="product-table">
+
               <thead>
                 <tr>
-                  <th>Nome</th>
-                  <th>Contato</th>
+                  <th>Cliente</th>
+                  <th>E-mail</th>
+                  <th>WhatsApp</th>
                   <th>Ações</th>
                 </tr>
               </thead>
 
               <tbody>
-                {clients.length > 0 ? (
-                  clients.map(c => (
-                    <tr key={c.id}>
-                      <td><strong>{c.name}</strong></td>
+
+                {filteredClients.length > 0 ? (
+                  filteredClients.map(client => (
+                    <tr key={client.id}>
 
                       <td>
-                        {c.phone || c.email || '---'}
+                        <div className="client-name">
+                          <div className="avatar">
+                            {client.name?.charAt(0)}
+                          </div>
+
+                          <strong>{client.name}</strong>
+                        </div>
                       </td>
 
                       <td>
+                        {client.email || '---'}
+                      </td>
+
+                      <td>
+                        {client.phone || '---'}
+                      </td>
+
+                      <td>
+
                         <div className="actions">
+
                           <button
-                            type="button"
-                            onClick={() => startEdit(c)}
                             className="btn-edit"
+                            onClick={() => startEdit(client)}
                           >
                             ✏️
                           </button>
 
                           <button
-                            type="button"
-                            onClick={() => handleDeleteClient(c.id, c.name)}
                             className="btn-delete"
+                            onClick={() =>
+                              handleDeleteClient(
+                                client.id,
+                                client.name
+                              )
+                            }
                           >
                             🗑️
                           </button>
+
                         </div>
+
                       </td>
+
                     </tr>
                   ))
+
                 ) : (
                   <tr>
-                    <td colSpan="3" className="empty">
-                      Nenhum cliente cadastrado.
+                    <td colSpan="4" className="empty">
+                      Nenhum cliente encontrado.
                     </td>
                   </tr>
                 )}
+
               </tbody>
+
             </table>
+
           </div>
 
         </main>
@@ -228,4 +363,4 @@ async function handleDeleteClient(id, clientName) {
   )
 }
 
-export default Clients  
+export default Clients

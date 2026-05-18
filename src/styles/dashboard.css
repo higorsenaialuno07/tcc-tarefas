@@ -23,14 +23,32 @@ body {
 }
 .main-layout {
   flex: 1;
+
   margin-left: var(--sidebar-width);
+
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+
   width: calc(100% - var(--sidebar-width));
   min-width: 0;
-}
 
+  min-height: 100vh;
+
+  padding-top: 70px;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      #ffffff 0%,
+      #f8fafc 25%,
+      #eef2f7 60%,
+      #e2e8f0 100%
+    );
+
+  position: relative;
+
+  overflow-x: hidden;
+}
 /* HEADER */
 header {
   background: #ffffff;
@@ -41,10 +59,34 @@ header {
 
 /* SIDEBAR */
 .sidebar {
-  width: 240px;
-  background: #111827;
-  color: #fff;
-  padding: 20px;
+  width: var(--sidebar-width);
+  height: 100vh;
+
+  background: linear-gradient(
+    180deg,
+    #0f172a 0%,
+    #111827 100%
+  );
+
+  color: white;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  padding: 28px 18px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  z-index: 1000;
+
+  box-sizing: border-box;
+
+  border-right: 1px solid rgba(255,255,255,0.05);
+
+  box-shadow: 4px 0 25px rgba(0,0,0,0.25);
 }
 
   /* .sidebar h2 {
@@ -71,14 +113,14 @@ header {
   padding: 30px;
   overflow-y: auto;
 
-  background: linear-gradient(
-    135deg,
-    #eef2f7 0%,
-    #f8fafc 50%,
-    #e2e8f0 100%
-  );
-
   min-height: 100vh;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f8fafc 0%,
+      #eef2f7 100%
+    );
 }
 
 .dashboard-content h2 {
@@ -258,7 +300,8 @@ button:hover {
 .chart-container:hover,
 .table-container:hover,
 .profile-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
+
   box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.08);
+    0 12px 30px rgba(15, 23, 42, 0.08);
 }

@@ -1,48 +1,85 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from '../services/supabase'
 import { useNavigate } from 'react-router-dom'
 
 function Sidebar() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   async function handleLogout() {
-    // 1. Avisa o Supabase para encerrar a sessão
     const { error } = await supabase.auth.signOut()
 
     if (error) {
       alert("Erro ao sair: " + error.message)
     } else {
-      // 2. Redireciona o usuário para a tela de login (index)
       navigate('/')
     }
   }
 
   return (
-    <div className="sidebar">
+    <aside className="sidebar">
       <div>
-        <h2 className="logo" style={{ color: '#ffffff', margin: '0 0 30px 0', display: 'block' }}>
-          Sistema
-        </h2>
+        <div className="logo-area">
+          <h1 className="logo">SGE</h1>
+
+          <p className="logo-subtitle">
+            Sistema de Gestão
+            <br />
+            Empresarial
+          </p>
+        </div>
 
         <nav className="sidebar-nav">
-          <Link to="/dashboard">🏠 Dashboard</Link>
-          <Link to="/products">📦 Produtos</Link>
-          <Link to="/clients">👥 Clientes</Link>
-          <Link to="/profile">👤 Perfil</Link>
-          <Link to="/sales">💰 Vendas</Link>
+          <Link
+            to="/dashboard"
+            className={location.pathname === '/dashboard' ? 'active' : ''}
+          >
+            <span>🏠</span>
+            Dashboard
+          </Link>
+
+          <Link
+            to="/products"
+            className={location.pathname === '/products' ? 'active' : ''}
+          >
+            <span>📦</span>
+            Produtos
+          </Link>
+
+          <Link
+            to="/clients"
+            className={location.pathname === '/clients' ? 'active' : ''}
+          >
+            <span>👥</span>
+            Clientes
+          </Link>
+
+          <Link
+            to="/profile"
+            className={location.pathname === '/profile' ? 'active' : ''}
+          >
+            <span>👤</span>
+            Perfil
+          </Link>
+
+          <Link
+            to="/sales"
+            className={location.pathname === '/sales' ? 'active' : ''}
+          >
+            <span>💰</span>
+            Vendas
+          </Link>
         </nav>
       </div>
 
-      {/* Adicionei o onClick aqui para chamar a função */}
-      <button 
-        className="btn btn-danger logout-btn" 
+      <button
+        className="logout-btn"
         onClick={handleLogout}
       >
         🚪 Sair
       </button>
-
-    </div>
-  );
+    </aside>
+  )
 }
 
-export default Sidebar;
+export default Sidebar
