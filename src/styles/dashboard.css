@@ -179,10 +179,10 @@ button:hover {
 }
 
 .page-title {
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   color: #0f172a;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 /* LISTAS */
@@ -231,9 +231,13 @@ button:hover {
 }
 
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .right {
+    width: 100%;
   }
 }
 
@@ -304,4 +308,84 @@ button:hover {
 
   box-shadow:
     0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+
+.grid .card {
+  position: relative;
+  overflow: hidden;
+}
+
+.grid .card h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.grid .card p {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.filters button {
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+.filters button:hover {
+  background: #0f172a;
+  color: white;
+}
+
+.list-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.chart-container {
+  padding: 25px;
+  min-height: 420px;
+}
+
+.chart-container h3 {
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+.right .card h3 {
+  color: #0f172a;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 4px;
+
+  background: linear-gradient(
+    90deg,
+    #22c55e,
+    #16a34a
+  );
 }

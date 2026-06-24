@@ -55,19 +55,19 @@ function Sidebar() {
           </Link>
 
           <Link
-            to="/profile"
-            className={location.pathname === '/profile' ? 'active' : ''}
-          >
-            <span>👤</span>
-            Perfil
-          </Link>
-
-          <Link
             to="/sales"
             className={location.pathname === '/sales' ? 'active' : ''}
           >
             <span>💰</span>
             Vendas
+          </Link>
+
+          <Link
+            to="/profile"
+            className={location.pathname === '/profile' ? 'active' : ''}
+          >
+            <span>👤</span>
+            Perfil
           </Link>
         </nav>
       </div>

@@ -1,7 +1,9 @@
+/* eslint-disable no-undef */
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../services/supabase'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
+import '../styles/clients.css'
 
 function Clients() {
   const [clients, setClients] = useState([])
@@ -26,6 +28,12 @@ function Clients() {
     return clients.filter(c => c.email).length
   }, [clients])
 
+  const completeClients = useMemo(() => {
+  return clients.filter(
+    c => c.email && c.phone
+  ).length
+}, [clients])
+
   // 🔄 Buscar clientes
   async function fetchClients() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -43,8 +51,9 @@ function Clients() {
   }
 
   useEffect(() => {
-    fetchClients()
-  }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  fetchClients()
+}, [])
 
   // 🔎 Pesquisa
   useEffect(() => {
@@ -54,6 +63,7 @@ function Clients() {
       client.phone?.includes(search)
     )
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredClients(filtered)
   }, [search, clients])
 
@@ -168,30 +178,36 @@ function Clients() {
               </h1>
 
               <p className="page-subtitle">
-                Gerencie clientes do sistema
-              </p>
+  Cadastro, consulta e gerenciamento de clientes
+</p>
             </div>
           </div>
 
           {/* STATS */}
-          <div className="stats-grid">
+   {/* STATS */}
+<div className="stats-grid">
 
-            <div className="stats-card">
-              <span>Total</span>
-              <h2>{totalClients}</h2>
-            </div>
+  <div className="stat-card">
+    <span>Total de Clientes</span>
+    <h2>{totalClients}</h2>
+  </div>
 
-            <div className="stats-card">
-              <span>Com WhatsApp</span>
-              <h2>{clientsWithPhone}</h2>
-            </div>
+  <div className="stat-card">
+    <span>Com WhatsApp</span>
+    <h2>{clientsWithPhone}</h2>
+  </div>
 
-            <div className="stats-card">
-              <span>Com E-mail</span>
-              <h2>{clientsWithEmail}</h2>
-            </div>
+  <div className="stat-card">
+    <span>Com E-mail</span>
+    <h2>{clientsWithEmail}</h2>
+  </div>
 
-          </div>
+    <div className="stat-card">
+  <span>Cadastro Completo</span>
+  <h2>{completeClients}</h2>
+</div>
+
+</div>
 
           {/* FORM */}
           <div className="form-container">
@@ -298,9 +314,8 @@ function Clients() {
                       <td>
                         <div className="client-name">
                           <div className="avatar">
-                            {client.name?.charAt(0)}
-                          </div>
-
+  {client.name?.charAt(0).toUpperCase()}
+</div>
                           <strong>{client.name}</strong>
                         </div>
                       </td>

@@ -29,6 +29,7 @@ async function fetchProducts() {
 }
 
 useEffect(() => {
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   fetchProducts()
 }, [])
 
@@ -125,6 +126,7 @@ useEffect(() => {
 async function handleDelete(product) {
   if (window.confirm(`Excluir "${product.name}"?`)) {
     try {
+      // eslint-disable-next-line no-unused-vars
       const { data: { user } } = await supabase.auth.getUser()
 
       const { error } = await supabase
