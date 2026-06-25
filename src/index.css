@@ -386,39 +386,38 @@ body {
 
 
 .profile-card {
-  width: 100%;
-  max-width: 450px;
+  width: 100%;                 /* ocupa toda largura disponível */
+  max-width: 450px;            /* limite máximo de largura */
 
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.95); /* fundo branco com leve transparência */
 
-  padding: 35px;
-  border-radius: 20px;
+  padding: 35px;               /* espaçamento interno */
+  border-radius: 20px;         /* cantos arredondados */
 
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;   /* borda cinza clara */
 
   box-shadow:
     0 10px 30px rgba(15, 23, 42, 0.06),
-    0 2px 8px rgba(15, 23, 42, 0.04);
+    0 2px 8px rgba(15, 23, 42, 0.04); /* sombra suave */
 
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);  /* efeito glassmorphism */
 
-  text-align: center;
+  text-align: center;          /* centraliza conteúdo */
 
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease,
-    border-color 0.25s ease;
+    border-color 0.25s ease;  /* animações suaves */
 }
 
-
 .profile-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
 
-  border-color: #bfdbfe;
+  border-color: #2563eb;
 
   box-shadow:
-    0 16px 40px rgba(37, 99, 235, 0.10),
-    0 4px 12px rgba(15, 23, 42, 0.06);
+    0 20px 40px rgba(37, 99, 235, 0.15),
+    0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
 .profile-actions {
