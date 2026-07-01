@@ -106,7 +106,7 @@
 }
 
 .btn-primary {
-  background: #2563eb;
+  background: var(--primary-blue);
   color: white;
   border: none;
   padding: 12px 18px;
@@ -116,7 +116,7 @@
 }
 
 .btn-primary:hover {
-  background: #1d4ed8;
+  background: var(--primary-blue-hover);
 }
 
 .btn-secondary {
@@ -165,16 +165,16 @@
   box-shadow: 0 4px 20px rgba(0,0,0,.05);
 }
 
-.product-table {
+.clients-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.product-table thead {
+.clients-table thead {
   background: #f8fafc;
 }
 
-.product-table th {
+.clients-table th {
   text-align: left;
   padding: 16px;
   color: #475569;
@@ -182,12 +182,12 @@
   font-weight: 600;
 }
 
-.product-table td {
+.clients-table td {
   padding: 16px;
   border-top: 1px solid #f1f5f9;
 }
 
-.product-table tr:hover {
+.clients-table tr:hover {
   background: #f8fafc;
 }
 
@@ -286,4 +286,31 @@
   .product-table {
     min-width: 700px;
   }
+}
+
+
+.form-grid input,
+.search-input {
+    transition: .25s ease;
+}
+
+.form-grid input:focus,
+.search-input:focus {
+    transform: translateY(-1px);
+}
+
+
+.clients-table tbody tr {
+    transition: .2s ease;
+}
+
+.clients-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.btn-edit,
+.btn-delete{
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
