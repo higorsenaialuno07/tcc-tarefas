@@ -2,6 +2,7 @@
   import { supabase } from '../services/supabase'
   import { useNavigate } from 'react-router-dom'
   import '../styles/dashboard.css'
+  import '../styles/App.css'
   import Sidebar from '../components/Sidebar'
   import Header from '../components/Header'
 

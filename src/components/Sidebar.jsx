@@ -1,6 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { supabase } from '../services/supabase'
-import { useNavigate } from 'react-router-dom'
 
 function Sidebar() {
   const navigate = useNavigate()
@@ -16,66 +15,50 @@ function Sidebar() {
     }
   }
 
+  const isActive = (path) => location.pathname === path
+
   return (
     <aside className="sidebar">
-      <div>
-        <div className="logo-area">
-          <h1 className="logo">SGE</h1>
+  <div>
+    <div className="logo-area">
+      <h1 className="logo">SGE</h1>
 
-          <p className="logo-subtitle">
-            Sistema de Gestão
-            <br />
-            Empresarial
-          </p>
-        </div>
+      <p className="logo-subtitle">
+        Sistema de Gestão Empresarial
+      </p>
+    </div>
 
         <nav className="sidebar-nav">
-          <Link
-            to="/dashboard"
-            className={location.pathname === '/dashboard' ? 'active' : ''}
-          >
+
+          <Link to="/dashboard" className={isActive('/dashboard') ? 'active' : ''}>
             <span>🏠</span>
             Dashboard
           </Link>
 
-          <Link
-            to="/products"
-            className={location.pathname === '/products' ? 'active' : ''}
-          >
+          <Link to="/products" className={isActive('/products') ? 'active' : ''}>
             <span>📦</span>
             Produtos
           </Link>
 
-          <Link
-            to="/clients"
-            className={location.pathname === '/clients' ? 'active' : ''}
-          >
+          <Link to="/clients" className={isActive('/clients') ? 'active' : ''}>
             <span>👥</span>
             Clientes
           </Link>
 
-          <Link
-            to="/sales"
-            className={location.pathname === '/sales' ? 'active' : ''}
-          >
+          <Link to="/sales" className={isActive('/sales') ? 'active' : ''}>
             <span>💰</span>
             Vendas
           </Link>
 
-          <Link
-            to="/profile"
-            className={location.pathname === '/profile' ? 'active' : ''}
-          >
+          <Link to="/profile" className={isActive('/profile') ? 'active' : ''}>
             <span>👤</span>
             Perfil
           </Link>
+
         </nav>
       </div>
 
-      <button
-        className="logout-btn"
-        onClick={handleLogout}
-      >
+      <button className="logout-btn" onClick={handleLogout}>
         🚪 Sair
       </button>
     </aside>

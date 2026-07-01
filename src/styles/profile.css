@@ -1,0 +1,290 @@
+/* =========================
+   PROFILE
+========================= */
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 420px));
+  gap: 30px;
+  justify-content: center;
+  align-items: start;
+}
+
+.profile-card {
+  background: #fff;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.05);
+  transition: .25s;
+}
+
+.profile-card:hover {
+  transform: translateY(-4px);
+}
+
+.profile-card h3 {
+  font-size: 22px;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+.profile-email {
+  text-align: center;
+  color: #64748b;
+  margin: 15px 0 25px;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+/* =========================
+   AVATAR
+========================= */
+
+.profile-avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.profile-avatar,
+.profile-img-preview {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+}
+
+.profile-avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: linear-gradient(135deg,#2563eb,#3b82f6);
+
+  color: white;
+  font-size: 38px;
+  font-weight: bold;
+
+  border: 4px solid white;
+
+  box-shadow: 0 10px 25px rgba(37,99,235,.25);
+}
+
+.profile-img-preview {
+  object-fit: cover;
+  border: 4px solid white;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,.08);
+}
+
+/* =========================
+   BOTÃO FOTO
+========================= */
+
+.btn-change-avatar {
+  margin-top: 18px;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  border: 1px solid #bfdbfe;
+
+  padding: 10px 18px;
+
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .25s;
+}
+
+.btn-change-avatar:hover {
+  background: #dbeafe;
+}
+
+/* =========================
+   CAMPOS
+========================= */
+
+.profile-field {
+  margin-bottom: 20px;
+}
+
+.profile-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #334155;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.profile-input {
+  width: 100%;
+
+  padding: 13px 15px;
+
+  border-radius: 12px;
+
+  border: 1px solid #dbe2ea;
+
+  background: #f8fafc;
+
+  font-size: 15px;
+
+  transition: .25s;
+}
+
+.profile-input:focus {
+  outline: none;
+
+  background: white;
+
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+}
+
+/* =========================
+   BOTÕES
+========================= */
+
+.btn-save,
+.btn-password {
+  width: 100%;
+
+  padding: 14px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .25s;
+}
+
+.btn-save {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-save:hover {
+  background: #1d4ed8;
+}
+
+.btn-password {
+  background: #0f172a;
+  color: white;
+}
+
+.btn-password:hover {
+  background: #020617;
+}
+
+button:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast {
+  position: fixed;
+
+  bottom: 25px;
+  right: 25px;
+
+  padding: 14px 20px;
+
+  border-radius: 12px;
+
+  color: white;
+  font-weight: 600;
+
+  animation: fadeIn .3s ease;
+
+  z-index: 9999;
+}
+
+.toast.success {
+  background: #16a34a;
+}
+
+.toast.error {
+  background: #dc2626;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading {
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 22px;
+  font-weight: 600;
+
+  color: #334155;
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media (max-width: 900px) {
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card {
+    padding: 25px;
+  }
+
+}
+
+@media (max-width: 500px) {
+
+  .profile-avatar,
+  .profile-img-preview {
+    width: 90px;
+    height: 90px;
+  }
+
+  .profile-avatar {
+    font-size: 30px;
+  }
+
+}

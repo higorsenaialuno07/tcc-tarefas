@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../services/supabase'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
+import '../styles/Products.css'
 
 function Products() {
   const [products, setProducts] = useState([])
@@ -190,7 +191,7 @@ async function handleDelete(product) {
                   hidden
                 />
                 <label htmlFor="foto-produto">
-                  {previewUrl ? "📷 Trocar Foto" : "📁 Selecionar Foto"}
+                  {previewUrl ? "📷 Trocar Foto" : "Selecionar Foto"}
                 </label>
               </div>
             </div>
@@ -205,7 +206,7 @@ async function handleDelete(product) {
               <button
                 type="submit"
                 disabled={loading}
-                className={editingProduct ? "btn-warning" : "btn-primary"}
+                className="btn-primary"
               >
                 {loading
                   ? 'Processando...'

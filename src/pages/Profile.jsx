@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import "../styles/profile.css";
 
 function Profile() {
   const [user, setUser] = useState(null);
