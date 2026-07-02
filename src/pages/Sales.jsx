@@ -2,54 +2,64 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../services/supabase'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
+import { useTheme } from '../context/ThemeContext'
 import '../styles/sales.css'
 
 function Sales() {
   const [products, setProducts] = useState([])
   const [sales, setSales] = useState([])
   const [clients, setClients] = useState([])
+  const [userId, setUserId] = useState(null)
 
   const [selectedProductId, setSelectedProductId] = useState('')
   const [selectedClientId, setSelectedClientId] = useState('')
   const [quantity, setQuantity] = useState(1)
 
   const [loading, setLoading] = useState(false)
+  
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
+  // Mapeamento dinâmico de variáveis que força os elementos a obedecerem ao tema atual
+  const themeVariables = {
+    '--sales-bg': isDark ? '#0f172a' : '#f1f5f9',
+    '--sales-surface': isDark ? '#1e293b' : '#ffffff',
+    '--sales-surface-2': isDark ? '#0f172a' : '#f8fafc',
+    '--sales-border': isDark ? '#334155' : '#e2e8f0',
+    '--sales-text': isDark ? '#f8fafc' : '#0f172a',
+    '--sales-text-secondary': isDark ? '#94a3b8' : '#64748b',
+    '--sales-shadow': isDark ? '0 4px 6px -1px rgba(0, 0, 0, 0.5)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+  }
 
   useEffect(() => {
-    fetchData()
+    async function initialize() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserId(user.id)
+        fetchData(user.id)
+      }
+    }
+    initialize()
   }, [])
 
-  async function fetchData() {
-    const {
-      data: { user }
-    } = await supabase.auth.getUser()
+  async function fetchData(currentUserId = userId) {
+    if (!currentUserId) return
 
-    const { data: pData } = await supabase
-      .from('products')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('name')
+    const [productsRes, clientsRes, salesRes] = await Promise.all([
+      supabase.from('products').select('*').eq('user_id', currentUserId).order('name'),
+      supabase.from('clients').select('*').eq('user_id', currentUserId).order('name'),
+      supabase.from('sales').select('*, clients(name)').eq('user_id', currentUserId).order('created_at', { ascending: false })
+    ])
 
-    const { data: cData } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('name')
-
-    const { data: sData } = await supabase
-      .from('sales')
-      .select('*, clients(name)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-
-    setProducts(pData || [])
-    setClients(cData || [])
-    setSales(sData || [])
+    setProducts(productsRes.data || [])
+    setClients(clientsRes.data || [])
+    setSales(salesRes.data || [])
   }
 
   async function handleSale(e) {
     e.preventDefault()
-    setLoading(true)
+    if (quantity < 1) return alert('A quantidade mínima é 1')
+    setLoading(true) // CORRIGIDO: Modificado de loading(true) para setLoading(true)
 
     try {
       const product = products.find(p => p.id === selectedProductId)
@@ -60,10 +70,6 @@ function Sales() {
 
       const total = product.price * quantity
 
-      const {
-        data: { user }
-      } = await supabase.auth.getUser()
-
       const { error: saleError } = await supabase.from('sales').insert([
         {
           product_id: selectedProductId,
@@ -71,7 +77,7 @@ function Sales() {
           product_name: product.name,
           quantity,
           total_price: total,
-          user_id: user.id
+          user_id: userId
         }
       ])
 
@@ -86,7 +92,7 @@ function Sales() {
       setSelectedClientId('')
       setQuantity(1)
 
-      fetchData()
+      await fetchData()
     } catch (err) {
       alert(err.message)
     } finally {
@@ -106,18 +112,17 @@ function Sales() {
         .eq('id', sale.product_id)
         .single()
 
-      await supabase.from('sales').delete().eq('id', sale.id)
+      const { error: deleteError } = await supabase.from('sales').delete().eq('id', sale.id)
+      if (deleteError) throw deleteError
 
       if (product) {
         await supabase
           .from('products')
-          .update({
-            stock: product.stock + sale.quantity
-          })
+          .update({ stock: product.stock + sale.quantity })
           .eq('id', sale.product_id)
       }
 
-      fetchData()
+      await fetchData()
     } catch (err) {
       alert(err.message)
     } finally {
@@ -131,34 +136,38 @@ function Sales() {
   )
 
   return (
-    <div className="app-container">
+    <div 
+      className={`sales-app-container ${theme === 'dark' ? 'dark-mode-active' : ''}`} 
+      data-theme={theme}
+      style={themeVariables}
+    >
       <Sidebar />
 
-      <div className="main-layout">
+      <div className="sales-main-layout">
         <Header />
 
-        <main className="dashboard-content">
-          <h2 className="page-title">💰 Registro de Vendas</h2>
+        <main className="sales-dashboard-content">
+          <h2 className="sales-page-title">💰 Registro de Vendas</h2>
 
-          {/* CARDS */}
-          <div className="cards">
-            <div className="card">
-              <span>Total Faturado</span>
-              <h3>R$ {totalFaturado.toFixed(2)}</h3>
+          {/* CARDS SUPERIORES */}
+          <div className="sales-cards-grid">
+            <div className="sales-custom-card sales-revenue-card">
+              <span className="sales-card-span">Total Faturado</span>
+              <h3 className="sales-card-h3">R$ {totalFaturado.toFixed(2)}</h3>
             </div>
 
-            <div className="card">
-              <span>Total de Vendas</span>
-              <h3>{sales.length}</h3>
+            <div className="sales-custom-card sales-count-card">
+              <span className="sales-card-span">Total de Vendas</span>
+              <h3 className="sales-card-h3">{sales.length}</h3>
             </div>
           </div>
 
-          {/* FORM */}
-          <div className="card form-card">
-            <h2>Registrar Venda</h2>
+          {/* FORMULÁRIO */}
+          <div className="sales-custom-card sales-form-card">
+            <h2 className="sales-card-h2">Registrar Venda</h2>
 
-            <form className="form" onSubmit={handleSale}>
-              <div className="field">
+            <form className="sales-form-element" onSubmit={handleSale}>
+              <div className="sales-form-field">
                 <label>Cliente</label>
                 <select
                   value={selectedClientId}
@@ -174,7 +183,7 @@ function Sales() {
                 </select>
               </div>
 
-              <div className="field">
+              <div className="sales-form-field">
                 <label>Produto</label>
                 <select
                   value={selectedProductId}
@@ -188,81 +197,83 @@ function Sales() {
                       value={p.id}
                       disabled={p.stock <= 0}
                     >
-                      {p.name} ({p.stock})
+                      {p.name} ({p.stock} em estoque)
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="field">
+              <div className="sales-form-field">
                 <label>Quantidade</label>
                 <input
                   type="number"
                   min="1"
                   value={quantity}
                   onChange={e => setQuantity(Number(e.target.value))}
+                  required
                 />
               </div>
 
-              <div className="field field-button">
-                <button className="btn-primary" disabled={loading}>
+              <div className="sales-form-field">
+                <button className="sales-btn-primary" disabled={loading}>
                   {loading ? 'Processando...' : 'Finalizar Venda'}
                 </button>
               </div>
             </form>
           </div>
 
-          {/* TABLE */}
-          <div className="card table-card">
-            <h2>Histórico de Vendas</h2>
+          {/* TABELA DE HISTÓRICO */}
+          <div className="sales-custom-card sales-table-card">
+            <h2 className="sales-card-h2">Histórico de Vendas</h2>
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Cliente</th>
-                  <th>Produto</th>
-                  <th>Qtd</th>
-                  <th>Total</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {sales.length === 0 ? (
+            <div className="sales-table-responsive">
+              <table className="sales-data-table">
+                <thead>
                   <tr>
-                    <td colSpan="6" className="empty">
-                      Nenhuma venda cadastrada
-                    </td>
+                    <th>Data</th>
+                    <th>Cliente</th>
+                    <th>Produto</th>
+                    <th>Qtd</th>
+                    <th>Total</th>
+                    <th>Ações</th>
                   </tr>
-                ) : (
-                  sales.map(sale => (
-                    <tr key={sale.id}>
-                      <td>
-                        {new Date(sale.created_at).toLocaleDateString('pt-BR')}
-                      </td>
+                </thead>
 
-                      <td>{sale.clients?.name}</td>
-                      <td>{sale.product_name}</td>
-                      <td>{sale.quantity}</td>
-
-                      <td className="price">
-                        R$ {Number(sale.total_price).toFixed(2)}
-                      </td>
-
-                      <td>
-                        <button
-                          className="btn-delete"
-                          onClick={() => handleDeleteSale(sale)}
-                        >
-                          🗑️
-                        </button>
+                <tbody>
+                  {sales.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="sales-empty-row">
+                        Nenhuma venda cadastrada
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    sales.map(sale => (
+                      <tr key={sale.id}>
+                        <td>
+                          {new Date(sale.created_at).toLocaleDateString('pt-BR')}
+                        </td>
+                        <td>{sale.clients?.name || 'Cliente Removido'}</td>
+                        <td>{sale.product_name}</td>
+                        <td>{sale.quantity}</td>
+                        <td className="sales-price-highlight">
+                          R$ {Number(sale.total_price).toFixed(2)}
+                        </td>
+                        <td>
+                          <button
+                            className="sales-btn-delete"
+                            onClick={() => handleDeleteSale(sale)}
+                            title="Excluir Venda"
+                            disabled={loading}
+                          >
+                            🗑️
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </main>
       </div>

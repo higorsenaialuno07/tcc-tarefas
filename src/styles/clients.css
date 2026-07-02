@@ -12,11 +12,11 @@
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .page-subtitle {
-  color: #64748b;
+  color: var(--text-secondary);
   margin-top: 6px;
 }
 
@@ -32,10 +32,12 @@
 }
 
 .stat-card {
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
   padding: 24px;
   border-radius: 18px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
   transition: .25s;
 }
 
@@ -45,14 +47,14 @@
 
 .stat-card span {
   display: block;
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .stat-card h2 {
   margin-top: 10px;
   font-size: 2rem;
-  color: #0f172a;
+  color: var(--text);
 }
 
 /* =========================
@@ -60,17 +62,20 @@
 ========================= */
 
 .form-container {
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
   padding: 25px;
   border-radius: 18px;
   margin-bottom: 25px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.05);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
 .section-title {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 20px;
+  color: var(--text);
 }
 
 .client-form {
@@ -85,14 +90,20 @@
 
 .form-grid input {
   padding: 12px 15px;
-  border: 1px solid #dbe2ea;
+  border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 14px;
   outline: none;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.form-grid input::placeholder {
+  color: var(--text-secondary);
 }
 
 .form-grid input:focus {
-  border-color: #2563eb;
+  border-color: var(--primary-blue);
 }
 
 /* =========================
@@ -120,16 +131,16 @@
 }
 
 .btn-secondary {
-  background: #e5e7eb;
-  color: #111827;
-  border: none;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
   padding: 12px 18px;
   border-radius: 10px;
   cursor: pointer;
 }
 
 .btn-secondary:hover {
-  background: #d1d5db;
+  background: var(--border);
 }
 
 /* =========================
@@ -143,14 +154,19 @@
 .search-input {
   width: 100%;
   padding: 14px 18px;
-  border: 1px solid #dbe2ea;
+  border: 1px solid var(--border);
   border-radius: 12px;
   font-size: 14px;
-  background: white;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
 }
 
 .search-input:focus {
-  border-color: #2563eb;
+  border-color: var(--primary-blue);
   outline: none;
 }
 
@@ -159,10 +175,41 @@
 ========================= */
 
 .table-container {
-  background: white;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,.05);
+  width: 100%;
+  overflow-x: auto;
+  padding: 20px;
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.table-container th,
+.table-container td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-container th {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.table-container td {
+  color: var(--text);
+}
+
+.table-container tr:hover {
+  background: var(--surface-2);
 }
 
 .clients-table {
@@ -171,24 +218,25 @@
 }
 
 .clients-table thead {
-  background: #f8fafc;
+  background: var(--surface-2);
 }
 
 .clients-table th {
   text-align: left;
   padding: 16px;
-  color: #475569;
+  color: var(--text);
   font-size: 14px;
   font-weight: 600;
 }
 
 .clients-table td {
   padding: 16px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border);
+  color: var(--text);
 }
 
 .clients-table tr:hover {
-  background: #f8fafc;
+  background: var(--surface-2);
 }
 
 /* =========================
@@ -237,6 +285,10 @@
   border-radius: 10px;
   cursor: pointer;
   transition: .2s;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-edit {
@@ -262,7 +314,7 @@
 .empty {
   text-align: center;
   padding: 30px;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 /* =========================
@@ -288,29 +340,20 @@
   }
 }
 
-
 .form-grid input,
 .search-input {
-    transition: .25s ease;
+  transition: .25s ease;
 }
 
 .form-grid input:focus,
 .search-input:focus {
-    transform: translateY(-1px);
+  transform: translateY(-1px);
 }
 
-
 .clients-table tbody tr {
-    transition: .2s ease;
+  transition: .2s ease;
 }
 
 .clients-table tbody tr:hover {
-    background: #f8fafc;
-}
-
-.btn-edit,
-.btn-delete{
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  background: var(--surface-2);
 }

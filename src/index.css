@@ -2,8 +2,9 @@
 :root {
   --sidebar-width: 260px;
 
-  --bg-main: #f1f5f9;
-  --bg-card: #ffffff;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
 
   --sidebar-bg: #0f172a;
   --sidebar-hover: #1e293b;
@@ -11,19 +12,38 @@
   --primary-blue: #2563eb;
   --primary-blue-hover: #1d4ed8;
 
-  --text-main: #0f172a;
+  --text: #0f172a;
   --text-secondary: #64748b;
 
-  --border-color: #e2e8f0;
+  --border: #e2e8f0;
 
   --success: #22c55e;
   --danger: #ef4444;
   --warning: #f59e0b;
 
-  --shadow:
-    0 10px 25px rgba(15, 23, 42, 0.08);
+  --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 
   --radius: 18px;
+}
+
+body[data-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #334155;
+
+  --text: #f8fafc;
+  --text-secondary: #cbd5e1;
+
+  --border: #475569;
+
+  --shadow: 0 10px 25px rgba(0,0,0,.35);
+}
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background .3s, color .3s;
 }
 
 /* 1. Correção e Estilo da Sidebar */
@@ -50,17 +70,28 @@
 .header {
   position: fixed;
   top: 0;
-  left: var(--sidebar-width); /* Alinhado exatamente onde termina a sidebar */
+  left: var(--sidebar-width);
   right: 0;
   height: 70px;
-  background: #ffffff;
+
+  background: var(--surface);
+  color: var(--text);
+
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   padding: 0 40px;
-  z-index: 900; /* Menor que a sidebar */
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-  border: none;
+
+  z-index: 900;
+
+  box-shadow: var(--shadow);
+  border-bottom: 1px solid var(--border);
+
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 /* 3. Área de Conteúdo Principal */
@@ -84,12 +115,13 @@
 
 /* 4. Estilo dos Cards (Melhoria de UI) */
 .card {
-  background: white;
+  background: var(--surface);
+  color: var(--text);
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow);
-  border: 1px solid #e2e8f0;
-  transition: transform 0.2s;
+  border: 1px solid var(--border);
+  transition: transform 0.2s, background 0.3s, color 0.3s, border-color 0.3s;
 }
 
 .card:hover {
@@ -113,7 +145,7 @@ input:focus {
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-color);
+  transition: 0.3s ease;
 }
 
 .app-container {
@@ -158,23 +190,36 @@ body {
 }
 
 .summary-card {
-  background: white;
+  background: var(--surface);
+  color: var(--text);
+
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centraliza o texto no card */
-}
+  align-items: center;
 
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.2s ease;
+}
 .summary-card strong {
   font-size: 1.8rem;
   margin-top: 5px;
+  color: var(--text);
 }
 
 /* 7. Formulário em Linha */
 .task-form {
-  background: white;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
   padding: 20px;
   border-radius: 12px;
   display: flex;
@@ -200,20 +245,35 @@ body {
 
 /* 8. Lista de Tarefas */
 .task-item {
-  background: white;
+  background: var(--surface);
+  color: var(--text);
+
   padding: 16px;
   border-radius: 10px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   border-left: 5px solid transparent;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  border: 1px solid var(--border);
+
+  box-shadow: var(--shadow);
+
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.2s ease;
 }
 
 .task-main { display: flex; align-items: center; gap: 15px; }
 .task-meta { display: flex; align-items: center; gap: 20px; }
 
-.done { text-decoration: line-through; color: #94a3b8; }
+.done {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
 
 /* Badges de Prioridade */
 .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
@@ -757,4 +817,16 @@ button:disabled {
 .btn-change-avatar:hover {
   background: #dbeafe;
   transform: scale(1.02);
+}
+
+
+body[data-theme="light"] {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+
+body[data-theme="dark"] {
+  background: #0f172a;
+  color: #f8fafc;
 }

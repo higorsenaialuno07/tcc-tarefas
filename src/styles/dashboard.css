@@ -6,54 +6,51 @@
   font-family: 'Inter', sans-serif;
 }
 
+
 body {
+  background: var(--bg);
+  color: var(--text);
+  transition: background .3s ease, color .3s ease;
+}
+
+body[data-theme="light"] {
   background: #eef2f7;
-  font-family: 'Inter', sans-serif;
+}
+
+body[data-theme="dark"] {
+  background: #0f172a;
+}
+
+.dashboard {
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* LAYOUT */
 .app-container {
   min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    #eef2f7 0%,
-    #f8fafc 50%,
-    #e2e8f0 100%
-  );
+  background: var(--bg);
 }
+
 .main-layout {
   flex: 1;
-
   margin-left: var(--sidebar-width);
-
   display: flex;
   flex-direction: column;
-
   width: calc(100% - var(--sidebar-width));
   min-width: 0;
-
   min-height: 100vh;
-
   padding-top: 70px;
-
-  background:
-    radial-gradient(
-      circle at top left,
-      #ffffff 0%,
-      #f8fafc 25%,
-      #eef2f7 60%,
-      #e2e8f0 100%
-    );
-
+  background: var(--bg);
   position: relative;
-
   overflow-x: hidden;
 }
 /* HEADER */
 header {
-  background: #ffffff;
+  background: var(--surface);
+  color: var(--text);
   padding: 15px 25px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   font-weight: 600;
 }
 
@@ -114,15 +111,10 @@ header {
   width: 100%;
   padding: 30px;
   overflow-y: auto;
-
   min-height: 100vh;
 
-  background:
-    linear-gradient(
-      180deg,
-      #f8fafc 0%,
-      #eef2f7 100%
-    );
+  background: var(--bg);
+  color: var(--text);
 }
 
 .dashboard-content h2 {
@@ -154,11 +146,13 @@ button:hover {
 /* CARD */
 .card {
   width: 100%;
-  background: #ffffff;
+  background: var(--surface);
+  color: var(--text);
   padding: 20px;
   border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  transition: 0.2s;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: .2s;
 }
 
 .card:hover {
@@ -183,25 +177,28 @@ button:hover {
 .page-title {
   font-size: 2rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text);
   margin-bottom: 24px;
 }
 
 /* LISTAS */
 .dashboard-content p {
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
   padding: 10px 15px;
   border-radius: 10px;
   margin-bottom: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  box-shadow: var(--shadow);
 }
 
 /* GRÁFICO */
 .recharts-wrapper {
-  background: #fff;
+  background: var(--surface);
+  border: 1px solid var(--border);
   padding: 20px;
   border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow);
 }
 
 /* ALERTA */
@@ -282,10 +279,12 @@ button:hover {
 .chart-container,
 .table-container,
 .profile-card {
-  background: rgba(255,255,255,0.85);
+ background: var(--surface);
+border: 1px solid var(--border);
+
+
   backdrop-filter: blur(12px);
 
-  border: 1px solid rgba(255,255,255,0.4);
 
   box-shadow:
     0 4px 20px rgba(15, 23, 42, 0.05),
@@ -321,7 +320,7 @@ button:hover {
 .grid .card h3 {
   font-size: 2rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .grid .card p {
@@ -329,7 +328,7 @@ button:hover {
   box-shadow: none;
   padding: 0;
   margin: 0;
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
@@ -340,21 +339,22 @@ button:hover {
 }
 
 .filters button {
-  background: white;
-  border: 1px solid #e2e8f0;
-  color: #334155;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
   font-weight: 600;
   padding: 10px 18px;
 }
 
 .filters button:hover {
-  background: #0f172a;
+  background: var(--primary-blue);
   color: white;
 }
 
 .list-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 12px;
   margin-bottom: 8px;
@@ -367,11 +367,11 @@ button:hover {
 
 .chart-container h3 {
   margin-bottom: 20px;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .right .card h3 {
-  color: #0f172a;
+  color: var(--text);
   margin-bottom: 16px;
   font-size: 1.1rem;
 }

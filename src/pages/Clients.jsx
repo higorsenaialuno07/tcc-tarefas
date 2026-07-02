@@ -4,6 +4,8 @@ import { supabase } from '../services/supabase'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 import '../styles/clients.css'
+// eslint-disable-next-line no-unused-vars
+import { useTheme } from '../context/ThemeContext'
 
 function Clients() {
   const [clients, setClients] = useState([])
