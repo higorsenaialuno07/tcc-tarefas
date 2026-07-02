@@ -9,8 +9,10 @@
 
 body {
   background: var(--bg);
+  overflow-x: hidden !important; /* Força o navegador a travar o scroll lateral global */
   color: var(--text);
   transition: background .3s ease, color .3s ease;
+  max-width: 100vw;
 }
 
 body[data-theme="light"] {
@@ -28,23 +30,26 @@ body[data-theme="dark"] {
 
 /* LAYOUT */
 .app-container {
+  display: flex;      /* 🌟 ESSENCIAL: Faz a sidebar e o conteúdo ficarem lado a lado */
+  width: 100%;
+  max-width: 100vw;
   min-height: 100vh;
   background: var(--bg);
+  overflow-x: hidden; /* Garante que a barra suma embaixo do botão Sair */
 }
-
 .main-layout {
   flex: 1;
-  margin-left: var(--sidebar-width);
   display: flex;
   flex-direction: column;
-  width: calc(100% - var(--sidebar-width));
-  min-width: 0;
+  min-width: 0;       /* 🌟 ESSENCIAL: Impede que tabelas estiquem o layout para o lado */
+  max-width: calc(100vw - 260px); /* Garante que ocupa só o espaço que sobra na tela */
   min-height: 100vh;
   padding-top: 70px;
   background: var(--bg);
   position: relative;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Mantém o conteúdo da direita isolado */
 }
+
 /* HEADER */
 header {
   background: var(--surface);
@@ -56,36 +61,36 @@ header {
 
 /* SIDEBAR */
 .sidebar {
-  width: var(--sidebar-width);
-  height: 100vh;
+    width: 260px;
+    min-width: 260px;
+    height: 100vh; /* Garante que a barra vá até o final da tela */
+    background: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+    color: white;
+    padding: 24px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Empurra o topo para cima e o botão para baixo */
+    box-sizing: border-box;
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    overflow-x: hidden;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
 
-  background: linear-gradient(
-    180deg,
-    #0f172a 0%,
-    #0b1220 100%
-  );
+.sidebar-top-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
 
-  color: white;
 
-  position: fixed;
-  top: 0;
-  left: 0;
-
-  padding: 28px 18px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  z-index: 1000;
-
-  box-sizing: border-box;
-
-  border-right: 1px solid rgba(255,255,255,0.04);
-
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
-
-  overflow-y: auto;
+.logout-btn {
+  width: 100%;
+  margin-top: auto;
 }
 
   /* .sidebar h2 {

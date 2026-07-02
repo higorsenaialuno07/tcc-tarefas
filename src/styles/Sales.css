@@ -5,16 +5,25 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
+  max-width: 100vw;  /* Garante que o container nunca passe do tamanho da tela */
+  overflow-x: hidden;     /* Desativa qualquer rolagem horizontal na raiz do componente */
   background-color: var(--sales-bg) !important;
-  font-family: sans-serif;
+  scrollbar-width: none;
   box-sizing: border-box;
+}
+
+/* Garante que o Chrome, Safari e Edge também escondam a barra */
+.sales-app-container::-webkit-scrollbar {
+  display: none;
 }
 
 .sales-main-layout {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  min-width: 0;           /* CRUCIAL: Impede que o flexbox estique além do limite do pai */
+  max-width: 100%;
+  overflow-x: hidden;     /* Proteção extra para o conteúdo do painel */
   background-color: var(--sales-bg) !important;
 }
 
@@ -150,9 +159,9 @@
 
 .sales-table-responsive {
   width: 100%;
-  overflow-x: auto;
-}
-
+  overflow-x: auto; /* Permite scroll horizontal APENAS dentro do card da tabela se precisar */
+  -webkit-overflow-scrolling: touch;
+} 
 .sales-data-table {
   width: 100%;
   border-collapse: collapse !important;
@@ -200,4 +209,19 @@
 @media (max-width: 1000px) {
   .sales-form-element { grid-template-columns: 1fr; }
   .sales-btn-primary { width: 100%; }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        padding: 12px 20px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+    }
 }

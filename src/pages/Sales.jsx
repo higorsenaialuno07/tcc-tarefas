@@ -20,7 +20,6 @@ function Sales() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
 
-  // Mapeamento dinâmico de variáveis que força os elementos a obedecerem ao tema atual
   const themeVariables = {
     '--sales-bg': isDark ? '#0f172a' : '#f1f5f9',
     '--sales-surface': isDark ? '#1e293b' : '#ffffff',
@@ -40,6 +39,7 @@ function Sales() {
       }
     }
     initialize()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function fetchData(currentUserId = userId) {
@@ -59,7 +59,7 @@ function Sales() {
   async function handleSale(e) {
     e.preventDefault()
     if (quantity < 1) return alert('A quantidade mínima é 1')
-    setLoading(true) // CORRIGIDO: Modificado de loading(true) para setLoading(true)
+    setLoading(true)
 
     try {
       const product = products.find(p => p.id === selectedProductId)
@@ -252,20 +252,19 @@ function Sales() {
                         <td>
                           {new Date(sale.created_at).toLocaleDateString('pt-BR')}
                         </td>
-                        <td>{sale.clients?.name || 'Cliente Removido'}</td>
+                        <td>{sale.clients?.name || 'Cliente deletado'}</td>
                         <td>{sale.product_name}</td>
                         <td>{sale.quantity}</td>
                         <td className="sales-price-highlight">
                           R$ {Number(sale.total_price).toFixed(2)}
                         </td>
                         <td>
-                          <button
+                          <button 
                             className="sales-btn-delete"
                             onClick={() => handleDeleteSale(sale)}
-                            title="Excluir Venda"
                             disabled={loading}
                           >
-                            🗑️
+                            Excluir
                           </button>
                         </td>
                       </tr>

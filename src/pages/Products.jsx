@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../services/supabase'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
@@ -13,32 +13,35 @@ function Products() {
   const [previewUrl, setPreviewUrl] = useState(null)
   const [loading, setLoading] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
- 
 
-// 🔄 Buscar produtos
-async function fetchProducts() {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false })
+  // 🔄 Buscar produtos (envolta em useCallback para evitar renderizações desnecessárias)
+  const fetchProducts = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error(error)
-  } else {
-    setProducts(data || [])
-  }
-}
+    if (error) {
+      console.error(error)
+    } else {
+      setProducts(data || [])
+    }
+  }, [])
 
-useEffect(() => {
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  fetchProducts()
-}, [])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchProducts()
+  }, [fetchProducts])
 
-  // 📷 Preview imagem
+  // 📷 Preview imagem com limpeza de memória
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (file) {
       setImageFile(file)
+      // Se já existia um preview de Blob antigo, limpa da memória
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl)
+      }
       setPreviewUrl(URL.createObjectURL(file))
     }
   }
@@ -59,6 +62,10 @@ useEffect(() => {
     setPrice('')
     setStock('')
     setImageFile(null)
+    // Limpa o objectURL se ele for um blob local
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl)
+    }
     setPreviewUrl(null)
     setEditingProduct(null)
   }
@@ -70,6 +77,8 @@ useEffect(() => {
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error("Usuário não autenticado.")
+
       let imageUrl = editingProduct?.image_url || ""
 
       if (imageFile) {
@@ -123,26 +132,23 @@ useEffect(() => {
     }
   }
 
-// 🗑️ Deletar
-async function handleDelete(product) {
-  if (window.confirm(`Excluir "${product.name}"?`)) {
-    try {
-      // eslint-disable-next-line no-unused-vars
-      const { data: { user } } = await supabase.auth.getUser()
+  // 🗑️ Deletar
+  async function handleDelete(product) {
+    if (window.confirm(`Excluir "${product.name}"?`)) {
+      try {
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .eq('id', product.id)
 
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', product.id)
+        if (error) throw error
 
-      if (error) throw error
-
-      fetchProducts()
-    } catch (error) {
-      alert("Erro: " + error.message)
+        fetchProducts()
+      } catch (error) {
+        alert("Erro: " + error.message)
+      }
     }
   }
-}
 
   return (
     <div className="app-container">
@@ -156,7 +162,6 @@ async function handleDelete(product) {
 
           {/* FORM */}
           <form className="product-form" onSubmit={handleAddProduct}>
-            
             <div className="form-grid">
               <input
                 placeholder="Nome do Produto"
