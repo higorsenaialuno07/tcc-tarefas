@@ -3,7 +3,7 @@ import { supabase } from '../services/supabase'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 import { useTheme } from '../context/ThemeContext'
-import '../styles/sales.css'
+import '../styles/Sales.css'
 
 function Sales() {
   const [products, setProducts] = useState([])
