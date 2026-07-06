@@ -157,7 +157,7 @@ function Products() {
       <div className="main-layout">
         <Header />
 
-        <main className="dashboard-content">
+        <main className="dashboard-content no-scroll">
           <h2 className="page-title">📦 Gerenciar Estoque</h2>
 
           {/* FORM */}

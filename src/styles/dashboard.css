@@ -41,13 +41,14 @@ body[data-theme="dark"] {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;       /* 🌟 ESSENCIAL: Impede que tabelas estiquem o layout para o lado */
-  max-width: calc(100vw - 260px); /* Garante que ocupa só o espaço que sobra na tela */
-  min-height: 100vh;
-  padding-top: 70px;
+  min-width: 0;
+  max-width: calc(100vw - 260px);
+
+  height: 100vh;      /* em vez de min-height */
+  overflow: hidden;   /* importante */
+
   background: var(--bg);
   position: relative;
-  overflow-x: hidden; /* Mantém o conteúdo da direita isolado */
 }
 
 /* HEADER */
@@ -111,12 +112,12 @@ header {
 
 /* DASHBOARD */
 .dashboard-content {
-  margin-top: var(--header-height);
   flex: 1;
   width: 100%;
+
   padding: 30px;
+
   overflow-y: auto;
-  min-height: 100vh;
 
   background: var(--bg);
   color: var(--text);
@@ -230,7 +231,7 @@ button:hover {
   }
 
   .dashboard-content {
-    padding: 90px 30px 30px; /* espaço pro header */
+    padding: 100px 30px 30px;  /* espaço pro header */
   }
 }
 

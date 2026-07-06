@@ -263,7 +263,7 @@ function Clients() {
           </div>
 
           {/* TABELA */}
-          <div className="table-container">
+          <div className="table-container2">
             <table className="product-table">
               <thead>
                 <tr>

@@ -1,93 +1,93 @@
-  import { useEffect, useState, useMemo } from 'react'
-  import { supabase } from '../services/supabase'
-  import { useNavigate } from 'react-router-dom'
-  import '../styles/dashboard.css'
-  import '../styles/App.css'
-  import Sidebar from '../components/Sidebar'
-  import Header from '../components/Header'
+    import { useEffect, useState, useMemo } from 'react'
+    import { supabase } from '../services/supabase'
+    import { useNavigate } from 'react-router-dom'
+    import '../styles/dashboard.css'
+    import '../styles/App.css'
+    import Sidebar from '../components/Sidebar'
+    import Header from '../components/Header'
 
-  import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-    CartesianGrid
-  } from 'recharts'
+    import {
+      LineChart,
+      Line,
+      XAxis,
+      YAxis,
+      Tooltip,
+      ResponsiveContainer,
+      CartesianGrid
+    } from 'recharts'
 
- function Dashboard() {
-  const [sales, setSales] = useState([])
-  const [products, setProducts] = useState([])
-  const [clients, setClients] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState('7d')
-  const [error, setError] = useState(null)
+  function Dashboard() {
+    const [sales, setSales] = useState([])
+    const [products, setProducts] = useState([])
+    const [clients, setClients] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [period, setPeriod] = useState('7d')
+    const [error, setError] = useState(null)
 
-  const navigate = useNavigate()
+    const navigate = useNavigate()
 
-    // 🔐 Auth
-    useEffect(() => {
-      async function getUser() {
-        const { data } = await supabase.auth.getUser()
-        if (!data.user) navigate('/')
-      }
-      getUser()
-    }, [navigate])
-
-    // 🚀 Fetch otimizado
-    async function fetchData() {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const [salesRes, productsRes, clientsRes] = await Promise.all([
-          supabase.from('sales').select('*'),
-          supabase.from('products').select('*'),
-          supabase.from('clients').select('*')
-        ])
-
-        if (salesRes.error || productsRes.error || clientsRes.error) {
-          throw new Error('Erro ao buscar dados')
+      // 🔐 Auth
+      useEffect(() => {
+        async function getUser() {
+          const { data } = await supabase.auth.getUser()
+          if (!data.user) navigate('/')
         }
+        getUser()
+      }, [navigate])
 
-        setSales(salesRes.data || [])
-        setProducts(productsRes.data || [])
-        setClients(clientsRes.data || [])
+      // 🚀 Fetch otimizado
+      async function fetchData() {
+        setLoading(true)
+        setError(null)
 
-      // eslint-disable-next-line no-unused-vars
-      } catch (err) {
-        setError('Erro ao carregar dashboard')
-      } finally {
-        setLoading(false)
+        try {
+          const [salesRes, productsRes, clientsRes] = await Promise.all([
+            supabase.from('sales').select('*'),
+            supabase.from('products').select('*'),
+            supabase.from('clients').select('*')
+          ])
+
+          if (salesRes.error || productsRes.error || clientsRes.error) {
+            throw new Error('Erro ao buscar dados')
+          }
+
+          setSales(salesRes.data || [])
+          setProducts(productsRes.data || [])
+          setClients(clientsRes.data || [])
+
+        // eslint-disable-next-line no-unused-vars
+        } catch (err) {
+          setError('Erro ao carregar dashboard')
+        } finally {
+          setLoading(false)
+        }
       }
-    }
 
-    useEffect(() => {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      fetchData()
-    }, [])
+      useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchData()
+      }, [])
 
-    // 📅 FILTRO DE PERÍODO
-    const filteredSales = useMemo(() => {
-      const now = new Date()
-      let days = 7
+      // 📅 FILTRO DE PERÍODO
+      const filteredSales = useMemo(() => {
+        const now = new Date()
+        let days = 7
 
-      if (period === '1d') days = 1
-      if (period === '30d') days = 30
+        if (period === '1d') days = 1
+        if (period === '30d') days = 30
 
-      const limitDate = new Date()
-      limitDate.setDate(now.getDate() - days)
+        const limitDate = new Date()
+        limitDate.setDate(now.getDate() - days)
 
-      return sales.filter(s => new Date(s.created_at) >= limitDate)
-    }, [sales, period])
+        return sales.filter(s => new Date(s.created_at) >= limitDate)
+      }, [sales, period])
 
-    // 💰 FORMAT
-    const formatCurrency = (value) =>
-      new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-      }).format(value)
+      // 💰 FORMAT
+      const formatCurrency = (value) =>
+        new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        }).format(value)
 
    // 📊 MÉTRICAS
 const total = filteredSales.reduce(
